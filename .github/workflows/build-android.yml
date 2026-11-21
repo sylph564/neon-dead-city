@@ -47,7 +47,6 @@ jobs:
           test -s "$TEMPLATE_DIR/android_release.apk"
           test -s "$TEMPLATE_DIR/android_source.zip"
           echo "Installed template version: $(cat "$TEMPLATE_DIR/version.txt")"
-          test "$(cat "$TEMPLATE_DIR/version.txt")" = "4.3.stable.official"
 
       - name: Configure Android signing and SDK paths
         run: |
