@@ -1,0 +1,25 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Prepare export
+        run: mkdir -p build
+      - name: Build debug APK
+        run: godot --headless --verbose --path . --export-debug "Android" build/NEON-DEAD-CITY.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEON-DEAD-CITY-Android
+          path: build/NEON-DEAD-CITY.apk
+          if-no-files-found: error
