@@ -43,11 +43,11 @@ jobs:
           wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz -O /tmp/godot-templates.tpz
           unzip -q /tmp/godot-templates.tpz -d /tmp/godot-templates
           cp /tmp/godot-templates/templates/* "$TEMPLATE_DIR/"
-          printf '4.3.stable\n' > "$TEMPLATE_DIR/version.txt"
           test -s "$TEMPLATE_DIR/android_debug.apk"
           test -s "$TEMPLATE_DIR/android_release.apk"
           test -s "$TEMPLATE_DIR/android_source.zip"
-          test "$(cat "$TEMPLATE_DIR/version.txt")" = "4.3.stable"
+          echo "Installed template version: $(cat "$TEMPLATE_DIR/version.txt")"
+          test "$(cat "$TEMPLATE_DIR/version.txt")" = "4.3.stable.official"
 
       - name: Configure Android signing and SDK paths
         run: |
