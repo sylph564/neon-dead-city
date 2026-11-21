@@ -29,7 +29,7 @@ func _ready() -> void:
     var player := PLAYER_SCENE.instantiate()
     player.position = Vector3(0, 0.15, 8)
     add_child(player)
-    startup_label.text = "NEON: DEAD CITY  //  NIGHT DISTRICT\nЛевый палец — движение  •  Правый — обзор"
+    startup_label.text = "NEON: DEAD CITY  //  DISTRICT 01\nЛевый палец — движение  •  Правый — обзор"
 
 func _create_environment() -> void:
     var world := WorldEnvironment.new()
@@ -103,14 +103,14 @@ func _create_roads() -> void:
         _add_box(Vector3(0, 0.07, road_offset + 3.0), Vector3(150, 0.12, 0.65), sidewalk_material)
 
 func _create_city() -> void:
-    for x in range(-3, 4):
+    for x in range(-2, 3):
         await get_tree().process_frame
-        for z in range(-3, 4):
+        for z in range(-2, 3):
             if abs(x) <= 1 and abs(z) <= 1:
                 continue
             var width := rng.randf_range(5.0, 7.5)
             var depth := rng.randf_range(5.0, 7.5)
-            var floors := rng.randi_range(4, 8)
+            var floors := rng.randi_range(3, 5)
             var height := float(floors) * rng.randf_range(2.7, 3.2)
             var center := Vector3(x * CITY_SPACING, height * 0.5 + 0.12, z * CITY_SPACING)
             _create_building(center, Vector3(width, height, depth), floors)
@@ -143,7 +143,7 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
 
     # Recessed-looking window grids on all four sides.
     var cols := 2
-    var rows := min(5, max(2, floors - 1))
+    var rows := min(3, max(2, floors - 1))
     for floor_index in range(rows):
         var y := -dimensions.y * 0.5 + 1.15 + float(floor_index) * (dimensions.y - 1.2) / rows
         for col in range(cols):
