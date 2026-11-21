@@ -1,0 +1,708 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+
+[sub_resource type="PlaneMesh" id="FloorMesh"]
+size = Vector2(180, 180)
+
+[sub_resource type="StandardMaterial3D" id="FloorMat"]
+albedo_color = Color(0.012, 0.018, 0.03, 1)
+roughness = 0.96
+
+[sub_resource type="BoxShape3D" id="FloorShape"]
+size = Vector3(180, 0.2, 180)
+
+[sub_resource type="BoxMesh" id="RoadMesh"]
+size = Vector3(8, 0.04, 150)
+
+[sub_resource type="StandardMaterial3D" id="RoadMat"]
+albedo_color = Color(0.035, 0.043, 0.06, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="SidewalkMesh"]
+size = Vector3(2.2, 0.16, 150)
+
+[sub_resource type="StandardMaterial3D" id="SidewalkMat"]
+albedo_color = Color(0.07, 0.08, 0.105, 1)
+roughness = 0.88
+
+[sub_resource type="BoxMesh" id="BuildingMesh"]
+size = Vector3(7, 16, 8)
+
+[sub_resource type="StandardMaterial3D" id="BuildingMat"]
+albedo_color = Color(0.025, 0.04, 0.068, 1)
+metallic = 0.32
+roughness = 0.76
+
+[sub_resource type="BoxMesh" id="WindowMesh"]
+size = Vector3(1.55, 1.05, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="WindowMat"]
+albedo_color = Color(0.015, 0.28, 0.42, 1)
+emission_enabled = true
+emission = Color(0.015, 0.28, 0.42, 1)
+emission_energy_multiplier = 0.75
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="NeonMesh"]
+size = Vector3(0.1, 13, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="NeonMat"]
+albedo_color = Color(0.02, 0.58, 0.95, 1)
+emission_enabled = true
+emission = Color(0.02, 0.58, 0.95, 1)
+emission_energy_multiplier = 1.5
+
+[node name="Main" type="Node3D"]
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-48, -25, 0)
+light_energy = 1.0
+shadow_enabled = false
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.12, 0)
+mesh = SubResource("FloorMesh")
+surface_material_override/0 = SubResource("FloorMat")
+
+[node name="GroundBody" type="StaticBody3D" parent="."]
+position = Vector3(0, -0.12, 0)
+
+[node name="GroundCollision" type="CollisionShape3D" parent="GroundBody"]
+shape = SubResource("FloorShape")
+
+[node name="RoadNorthSouth" type="MeshInstance3D" parent="."]
+mesh = SubResource("RoadMesh")
+surface_material_override/0 = SubResource("RoadMat")
+
+[node name="RoadEastWest" type="MeshInstance3D" parent="."]
+rotation_degrees = Vector3(0, 90, 0)
+mesh = SubResource("RoadMesh")
+surface_material_override/0 = SubResource("RoadMat")
+
+
+[node name="Sidewalk_-1" type="MeshInstance3D" parent="."]
+position = Vector3(-5.1, 0.02, 0)
+mesh = SubResource("SidewalkMesh")
+surface_material_override/0 = SubResource("SidewalkMat")
+
+
+[node name="Sidewalk_1" type="MeshInstance3D" parent="."]
+position = Vector3(5.1, 0.02, 0)
+mesh = SubResource("SidewalkMesh")
+surface_material_override/0 = SubResource("SidewalkMat")
+
+
+[node name="Tower1" type="MeshInstance3D" parent="."]
+position = Vector3(-12, 7, -24)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 0.875, 1)
+
+
+[node name="Window1" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 2.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window2" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 2.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window3" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 5.833333333333334, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window4" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 5.833333333333334, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window5" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 9.166666666666668, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window6" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 9.166666666666668, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip1" type="MeshInstance3D" parent="."]
+position = Vector3(-8.42, 7, -19.88)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 1.0769230769230769, 1)
+
+
+[node name="Tower2" type="MeshInstance3D" parent="."]
+position = Vector3(12, 8, -24)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 1, 1)
+
+
+[node name="Window7" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 2.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window8" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 2.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window9" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 6.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window10" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 6.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window11" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 10.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window12" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 10.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip2" type="MeshInstance3D" parent="."]
+position = Vector3(15.58, 8, -19.88)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 1.2307692307692308, 1)
+
+
+[node name="Tower3" type="MeshInstance3D" parent="."]
+position = Vector3(-12, 6, -6)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 0.75, 1)
+
+
+[node name="Window13" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 2.5, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window14" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 2.5, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window15" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 5.166666666666666, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window16" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 5.166666666666666, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window17" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 7.833333333333333, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window18" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 7.833333333333333, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip3" type="MeshInstance3D" parent="."]
+position = Vector3(-8.42, 6, -1.88)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 0.9230769230769231, 1)
+
+
+[node name="Tower4" type="MeshInstance3D" parent="."]
+position = Vector3(12, 7, -6)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 0.875, 1)
+
+
+[node name="Window19" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 2.5, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window20" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 2.5, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window21" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 5.833333333333334, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window22" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 5.833333333333334, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window23" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 9.166666666666668, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window24" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 9.166666666666668, -1.9450000000000003)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip4" type="MeshInstance3D" parent="."]
+position = Vector3(15.58, 7, -1.88)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 1.0769230769230769, 1)
+
+
+[node name="Tower5" type="MeshInstance3D" parent="."]
+position = Vector3(-12, 8, 12)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 1, 1)
+
+
+[node name="Window25" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 2.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window26" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 2.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window27" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 6.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window28" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 6.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window29" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 10.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window30" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 10.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip5" type="MeshInstance3D" parent="."]
+position = Vector3(-8.42, 8, 16.12)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 1.2307692307692308, 1)
+
+
+[node name="Tower6" type="MeshInstance3D" parent="."]
+position = Vector3(12, 6, 12)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 0.75, 1)
+
+
+[node name="Window31" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 2.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window32" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 2.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window33" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 5.166666666666666, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window34" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 5.166666666666666, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window35" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 7.833333333333333, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window36" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 7.833333333333333, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip6" type="MeshInstance3D" parent="."]
+position = Vector3(15.58, 6, 16.12)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 0.9230769230769231, 1)
+
+
+[node name="Tower7" type="MeshInstance3D" parent="."]
+position = Vector3(-12, 7, 30)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 0.875, 1)
+
+
+[node name="Window37" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 2.5, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window38" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 2.5, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window39" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 5.833333333333334, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window40" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 5.833333333333334, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window41" type="MeshInstance3D" parent="."]
+position = Vector3(-13.8, 9.166666666666668, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window42" type="MeshInstance3D" parent="."]
+position = Vector3(-10.200000000000001, 9.166666666666668, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip7" type="MeshInstance3D" parent="."]
+position = Vector3(-8.42, 7, 34.12)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 1.0769230769230769, 1)
+
+
+[node name="Tower8" type="MeshInstance3D" parent="."]
+position = Vector3(12, 8, 30)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 1, 1)
+
+
+[node name="Window43" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 2.5, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window44" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 2.5, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window45" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 6.5, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window46" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 6.5, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window47" type="MeshInstance3D" parent="."]
+position = Vector3(10.2, 10.5, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window48" type="MeshInstance3D" parent="."]
+position = Vector3(13.799999999999999, 10.5, 34.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip8" type="MeshInstance3D" parent="."]
+position = Vector3(15.58, 8, 34.12)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 1.2307692307692308, 1)
+
+
+[node name="Tower9" type="MeshInstance3D" parent="."]
+position = Vector3(-24, 6, -24)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 0.75, 1)
+
+
+[node name="Window49" type="MeshInstance3D" parent="."]
+position = Vector3(-25.8, 2.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window50" type="MeshInstance3D" parent="."]
+position = Vector3(-22.2, 2.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window51" type="MeshInstance3D" parent="."]
+position = Vector3(-25.8, 5.166666666666666, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window52" type="MeshInstance3D" parent="."]
+position = Vector3(-22.2, 5.166666666666666, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window53" type="MeshInstance3D" parent="."]
+position = Vector3(-25.8, 7.833333333333333, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window54" type="MeshInstance3D" parent="."]
+position = Vector3(-22.2, 7.833333333333333, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip9" type="MeshInstance3D" parent="."]
+position = Vector3(-20.42, 6, -19.88)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 0.9230769230769231, 1)
+
+
+[node name="Tower10" type="MeshInstance3D" parent="."]
+position = Vector3(24, 7, -24)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 0.875, 1)
+
+
+[node name="Window55" type="MeshInstance3D" parent="."]
+position = Vector3(22.2, 2.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window56" type="MeshInstance3D" parent="."]
+position = Vector3(25.8, 2.5, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window57" type="MeshInstance3D" parent="."]
+position = Vector3(22.2, 5.833333333333334, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window58" type="MeshInstance3D" parent="."]
+position = Vector3(25.8, 5.833333333333334, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window59" type="MeshInstance3D" parent="."]
+position = Vector3(22.2, 9.166666666666668, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window60" type="MeshInstance3D" parent="."]
+position = Vector3(25.8, 9.166666666666668, -19.945)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip10" type="MeshInstance3D" parent="."]
+position = Vector3(27.58, 7, -19.88)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 1.0769230769230769, 1)
+
+
+[node name="Tower11" type="MeshInstance3D" parent="."]
+position = Vector3(-24, 8, 12)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 1, 1)
+
+
+[node name="Window61" type="MeshInstance3D" parent="."]
+position = Vector3(-25.8, 2.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window62" type="MeshInstance3D" parent="."]
+position = Vector3(-22.2, 2.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window63" type="MeshInstance3D" parent="."]
+position = Vector3(-25.8, 6.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window64" type="MeshInstance3D" parent="."]
+position = Vector3(-22.2, 6.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window65" type="MeshInstance3D" parent="."]
+position = Vector3(-25.8, 10.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window66" type="MeshInstance3D" parent="."]
+position = Vector3(-22.2, 10.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip11" type="MeshInstance3D" parent="."]
+position = Vector3(-20.42, 8, 16.12)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 1.2307692307692308, 1)
+
+
+[node name="Tower12" type="MeshInstance3D" parent="."]
+position = Vector3(24, 6, 12)
+mesh = SubResource("BuildingMesh")
+surface_material_override/0 = SubResource("BuildingMat")
+scale = Vector3(1, 0.75, 1)
+
+
+[node name="Window67" type="MeshInstance3D" parent="."]
+position = Vector3(22.2, 2.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window68" type="MeshInstance3D" parent="."]
+position = Vector3(25.8, 2.5, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window69" type="MeshInstance3D" parent="."]
+position = Vector3(22.2, 5.166666666666666, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window70" type="MeshInstance3D" parent="."]
+position = Vector3(25.8, 5.166666666666666, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window71" type="MeshInstance3D" parent="."]
+position = Vector3(22.2, 7.833333333333333, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="Window72" type="MeshInstance3D" parent="."]
+position = Vector3(25.8, 7.833333333333333, 16.055)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+
+[node name="NeonStrip12" type="MeshInstance3D" parent="."]
+position = Vector3(27.58, 6, 16.12)
+mesh = SubResource("NeonMesh")
+surface_material_override/0 = SubResource("NeonMat")
+scale = Vector3(1, 0.9230769230769231, 1)
+
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector3(0, 0.15, 5)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Status" type="Label" parent="CanvasLayer"]
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 800.0
+offset_bottom = 90.0
+theme_override_colors/font_color = Color(0.25, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "NEON // DISTRICT 01  •  NIGHT CITY"
