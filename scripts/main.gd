@@ -12,6 +12,7 @@ func _ready() -> void:
     _create_city()
     _create_street_lights()
     _create_street_details()
+    _create_district_props()
     var player := PLAYER_SCENE.instantiate()
     player.position = Vector3(0, 0.15, 8)
     add_child(player)
@@ -108,8 +109,7 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
     box.size = dimensions
     mesh.mesh = box
     var shade := rng.randf_range(0.025, 0.075)
-    var facade := _material(Color(shade, shade * 1.2, shade * 1.9), 0.72, 0.22)
-    mesh.material_override = facade
+    mesh.material_override = _material(Color(shade, shade * 1.2, shade * 1.9), 0.72, 0.22)
     body.add_child(mesh)
     var collision := CollisionShape3D.new()
     var shape := BoxShape3D.new()
@@ -118,46 +118,59 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
     body.add_child(collision)
     add_child(body)
 
-    var window_colors := [
-        Color(0.02, 0.65, 0.95),
-        Color(0.85, 0.12, 0.55),
-        Color(0.95, 0.55, 0.12),
-        Color(0.18, 0.8, 0.62)
+    var palette := [
+        Color(0.02, 0.65, 0.95), Color(0.85, 0.12, 0.55),
+        Color(0.95, 0.55, 0.12), Color(0.18, 0.8, 0.62)
     ]
-    var glow_color: Color = window_colors[rng.randi_range(0, window_colors.size() - 1)]
-    var glow := _emissive_material(glow_color, 1.25)
+    var glow_color: Color = palette[rng.randi_range(0, palette.size() - 1)]
+    var glass := _emissive_material(glow_color, rng.randf_range(0.45, 1.15))
+    var frame := _material(Color(0.012, 0.018, 0.03), 0.42, 0.72)
+    var ledge := _material(Color(0.07, 0.085, 0.12), 0.68, 0.48)
+
+    # Recessed-looking window grids on all four sides.
+    var cols := 2 if dimensions.x < 6.2 else 3
+    var rows := max(2, floors - 1)
+    for floor_index in range(rows):
+        var y := -dimensions.y * 0.5 + 1.15 + float(floor_index) * (dimensions.y - 1.2) / rows
+        for col in range(cols):
+            var x := -dimensions.x * 0.5 + (float(col) + 0.5) * dimensions.x / cols
+            var w := dimensions.x / float(cols) * 0.62
+            _add_box(center + Vector3(x, y, dimensions.z * 0.5 + 0.035), Vector3(w, 0.82, 0.045), glass)
+            _add_box(center + Vector3(x, y, -dimensions.z * 0.5 - 0.035), Vector3(w, 0.82, 0.045), glass)
+        var side_cols := 2
+        for col in range(side_cols):
+            var z := -dimensions.z * 0.5 + (float(col) + 0.5) * dimensions.z / side_cols
+            var w_side := dimensions.z / float(side_cols) * 0.58
+            _add_box(center + Vector3(dimensions.x * 0.5 + 0.035, y, z), Vector3(0.045, 0.82, w_side), glass)
+            _add_box(center + Vector3(-dimensions.x * 0.5 - 0.035, y, z), Vector3(0.045, 0.82, w_side), glass)
+
+    # Strong horizontal floor bands and vertical structural ribs.
     for floor_index in range(1, floors):
-        if rng.randf() < 0.18:
-            continue
-        var y := -dimensions.y * 0.5 + floor_index * dimensions.y / floors
-        for side in [-1.0, 1.0]:
-            var window := MeshInstance3D.new()
-            var window_mesh := BoxMesh.new()
-            window_mesh.size = Vector3(dimensions.x * 0.48, 0.13, 0.035)
-            window.mesh = window_mesh
-            window.material_override = glow
-            window.position = center + Vector3(0, y, side * (dimensions.z * 0.5 + 0.025))
-            add_child(window)
-
-    # A few restrained vertical neon strips make silhouettes readable at a distance.
-    var strip_material := _emissive_material(glow_color, 0.9)
+        var band_y := -dimensions.y * 0.5 + float(floor_index) * dimensions.y / floors
+        _add_box(center + Vector3(0, band_y, dimensions.z * 0.5 + 0.06), Vector3(dimensions.x + 0.18, 0.10, 0.12), ledge)
+        _add_box(center + Vector3(0, band_y, -dimensions.z * 0.5 - 0.06), Vector3(dimensions.x + 0.18, 0.10, 0.12), ledge)
     for side in [-1.0, 1.0]:
-        var strip := MeshInstance3D.new()
-        var strip_mesh := BoxMesh.new()
-        strip_mesh.size = Vector3(0.09, dimensions.y * 0.72, 0.045)
-        strip.mesh = strip_mesh
-        strip.material_override = strip_material
-        strip.position = center + Vector3(side * (dimensions.x * 0.5 + 0.035), 0, dimensions.z * 0.5 + 0.04)
-        add_child(strip)
+        _add_box(center + Vector3(side * (dimensions.x * 0.5 + 0.055), 0, 0), Vector3(0.11, dimensions.y, dimensions.z + 0.12), frame)
+        var strip := _emissive_material(glow_color, 0.75)
+        _add_box(center + Vector3(side * (dimensions.x * 0.5 + 0.12), 0, dimensions.z * 0.5 + 0.09), Vector3(0.055, dimensions.y * 0.78, 0.055), strip)
 
-    # Rooftop ventilation units add a little skyline detail without expensive meshes.
-    var roof_unit := MeshInstance3D.new()
-    var roof_mesh := BoxMesh.new()
-    roof_mesh.size = Vector3(dimensions.x * 0.28, 0.65, dimensions.z * 0.24)
-    roof_unit.mesh = roof_mesh
-    roof_unit.material_override = _material(Color(0.035, 0.045, 0.065), 0.88)
-    roof_unit.position = center + Vector3(0, dimensions.y * 0.5 + 0.32, 0)
-    add_child(roof_unit)
+    # Ground-floor storefront and illuminated entrance.
+    _add_box(center + Vector3(0, -dimensions.y * 0.5 + 1.0, dimensions.z * 0.5 + 0.08), Vector3(min(dimensions.x * 0.48, 2.2), 1.85, 0.08), frame)
+    _add_box(center + Vector3(0, -dimensions.y * 0.5 + 1.05, dimensions.z * 0.5 + 0.14), Vector3(min(dimensions.x * 0.38, 1.65), 1.55, 0.035), glass)
+
+    # Roof rim, machinery, vents and antenna.
+    var roof_y := dimensions.y * 0.5
+    _add_box(center + Vector3(0, roof_y + 0.12, dimensions.z * 0.5), Vector3(dimensions.x + 0.3, 0.24, 0.22), ledge)
+    _add_box(center + Vector3(0, roof_y + 0.12, -dimensions.z * 0.5), Vector3(dimensions.x + 0.3, 0.24, 0.22), ledge)
+    _add_box(center + Vector3(dimensions.x * 0.5, roof_y + 0.12, 0), Vector3(0.22, 0.24, dimensions.z), ledge)
+    _add_box(center + Vector3(-dimensions.x * 0.5, roof_y + 0.12, 0), Vector3(0.22, 0.24, dimensions.z), ledge)
+    for unit in range(2):
+        var ux := -dimensions.x * 0.22 + float(unit) * dimensions.x * 0.42
+        _add_box(center + Vector3(ux, roof_y + 0.48, 0), Vector3(0.9, 0.48, 0.75), frame)
+        _add_box(center + Vector3(ux, roof_y + 0.74, 0), Vector3(0.62, 0.06, 0.5), ledge)
+    if rng.randf() > 0.35:
+        _add_box(center + Vector3(0, roof_y + 1.65, 0), Vector3(0.07, 1.9, 0.07), frame)
+        _add_box(center + Vector3(0, roof_y + 2.35, 0), Vector3(0.62, 0.07, 0.07), glass)
 
 func _create_street_lights() -> void:
     var pole_material := _material(Color(0.055, 0.065, 0.085), 0.7, 0.5)
@@ -201,6 +214,73 @@ func _create_street_details() -> void:
     _add_box(Vector3(0, 5.2, -13.5), Vector3(7.5, 1.25, 0.22), dark)
     _add_box(Vector3(0, 5.2, -13.36), Vector3(7.15, 0.08, 0.035), magenta)
     _add_box(Vector3(0, 5.2, -13.32), Vector3(0.08, 0.78, 0.035), cyan)
+
+
+func _create_district_props() -> void:
+    # A parked neon-era compact car, built from lightweight meshes.
+    var car := Node3D.new()
+    car.position = Vector3(-7.8, 0.0, 8.8)
+    car.rotation.y = deg_to_rad(90)
+    add_child(car)
+    var body_mat := _material(Color(0.035, 0.055, 0.085), 0.28, 0.82)
+    var glass_mat := _material(Color(0.015, 0.12, 0.19), 0.16, 0.55)
+    var tire_mat := _material(Color(0.008, 0.01, 0.016), 0.95)
+    var rim_mat := _material(Color(0.22, 0.3, 0.38), 0.25, 0.9)
+    var lamp_mat := _emissive_material(Color(0.02, 0.72, 1.0), 2.2)
+    var tail_mat := _emissive_material(Color(1.0, 0.025, 0.12), 1.7)
+    _add_car_box(car, Vector3(0, 0.62, 0), Vector3(2.0, 0.62, 4.1), body_mat)
+    _add_car_box(car, Vector3(0, 1.12, -0.22), Vector3(1.65, 0.72, 2.05), glass_mat)
+    _add_car_box(car, Vector3(0, 0.94, 1.65), Vector3(1.88, 0.12, 0.5), body_mat)
+    _add_car_box(car, Vector3(0, 0.92, -1.82), Vector3(1.9, 0.12, 0.42), body_mat)
+    _add_car_box(car, Vector3(-0.72, 0.68, 2.07), Vector3(0.34, 0.18, 0.06), lamp_mat)
+    _add_car_box(car, Vector3(0.72, 0.68, 2.07), Vector3(0.34, 0.18, 0.06), lamp_mat)
+    _add_car_box(car, Vector3(-0.72, 0.68, -2.07), Vector3(0.34, 0.18, 0.06), tail_mat)
+    _add_car_box(car, Vector3(0.72, 0.68, -2.07), Vector3(0.34, 0.18, 0.06), tail_mat)
+    for side in [-1.0, 1.0]:
+        for z in [-1.35, 1.35]:
+            var wheel := MeshInstance3D.new()
+            var cylinder := CylinderMesh.new()
+            cylinder.top_radius = 0.39
+            cylinder.bottom_radius = 0.39
+            cylinder.height = 0.22
+            wheel.mesh = cylinder
+            wheel.material_override = tire_mat
+            wheel.position = Vector3(side * 1.0, 0.4, z)
+            wheel.rotation.z = deg_to_rad(90)
+            car.add_child(wheel)
+            var hub := MeshInstance3D.new()
+            var hub_mesh := CylinderMesh.new()
+            hub_mesh.top_radius = 0.19
+            hub_mesh.bottom_radius = 0.19
+            hub_mesh.height = 0.235
+            hub.mesh = hub_mesh
+            hub.material_override = rim_mat
+            hub.position = wheel.position
+            hub.rotation.z = deg_to_rad(90)
+            car.add_child(hub)
+
+    # Roadside holographic pylons and a lit transit shelter.
+    var cyan := _emissive_material(Color(0.015, 0.58, 0.92), 1.8)
+    var pink := _emissive_material(Color(0.82, 0.025, 0.3), 1.5)
+    var dark := _material(Color(0.018, 0.025, 0.04), 0.55, 0.65)
+    for i in range(3):
+        var px := 11.0 + float(i) * 2.0
+        _add_box(Vector3(px, 1.65, 5.2), Vector3(0.12, 3.3, 0.12), dark)
+        _add_box(Vector3(px, 2.95, 5.2), Vector3(0.2, 0.08, 0.2), cyan if i % 2 == 0 else pink)
+    _add_box(Vector3(12.5, 1.45, -5.5), Vector3(4.2, 0.12, 1.35), dark)
+    _add_box(Vector3(12.5, 2.7, -5.5), Vector3(4.2, 0.12, 1.35), dark)
+    _add_box(Vector3(10.5, 2.05, -5.5), Vector3(0.12, 1.3, 1.35), cyan)
+    _add_box(Vector3(14.5, 2.05, -5.5), Vector3(0.12, 1.3, 1.35), cyan)
+    _add_box(Vector3(12.5, 2.05, -5.5), Vector3(3.8, 1.15, 0.035), _material(Color(0.025, 0.09, 0.14, 0.55), 0.2, 0.4))
+
+func _add_car_box(parent: Node3D, pos: Vector3, dimensions: Vector3, material: Material) -> void:
+    var mesh := MeshInstance3D.new()
+    var box := BoxMesh.new()
+    box.size = dimensions
+    mesh.mesh = box
+    mesh.material_override = material
+    mesh.position = pos
+    parent.add_child(mesh)
 
 func _add_box(pos: Vector3, dimensions: Vector3, material: Material) -> void:
     var mesh := MeshInstance3D.new()
