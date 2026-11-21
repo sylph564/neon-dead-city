@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 
@@ -52,6 +52,38 @@ albedo_color = Color(0.02, 0.58, 0.95, 1)
 emission_enabled = true
 emission = Color(0.02, 0.58, 0.95, 1)
 emission_energy_multiplier = 1.5
+
+
+[sub_resource type="BoxMesh" id="CarBodyMesh"]
+size = Vector3(2.2, 0.65, 4.2)
+
+[sub_resource type="StandardMaterial3D" id="CarBodyMat"]
+albedo_color = Color(0.025, 0.035, 0.055, 1)
+metallic = 0.82
+roughness = 0.28
+
+[sub_resource type="BoxMesh" id="CarCabinMesh"]
+size = Vector3(1.65, 0.72, 2.0)
+
+[sub_resource type="StandardMaterial3D" id="GlassMat"]
+albedo_color = Color(0.015, 0.16, 0.22, 1)
+metallic = 0.55
+roughness = 0.18
+
+[sub_resource type="BoxMesh" id="LampPoleMesh"]
+size = Vector3(0.14, 5.4, 0.14)
+
+[sub_resource type="BoxMesh" id="LampArmMesh"]
+size = Vector3(1.1, 0.12, 0.12)
+
+[sub_resource type="BoxMesh" id="SignMesh"]
+size = Vector3(3.8, 1.2, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="SignMat"]
+albedo_color = Color(0.02, 0.35, 0.7, 1)
+emission_enabled = true
+emission = Color(0.02, 0.35, 0.7, 1)
+emission_energy_multiplier = 2.0
 
 [node name="Main" type="Node3D"]
 
@@ -706,3 +738,39 @@ offset_bottom = 90.0
 theme_override_colors/font_color = Color(0.25, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 22
 text = "NEON // DISTRICT 01  •  NIGHT CITY"
+
+
+[node name="ParkedCarBody" type="MeshInstance3D" parent="."]
+position = Vector3(2.8, 0.62, 3.0)
+mesh = SubResource("CarBodyMesh")
+surface_material_override/0 = SubResource("CarBodyMat")
+
+[node name="ParkedCarCabin" type="MeshInstance3D" parent="."]
+position = Vector3(2.8, 1.25, 3.15)
+mesh = SubResource("CarCabinMesh")
+surface_material_override/0 = SubResource("GlassMat")
+
+[node name="LampPoleA" type="MeshInstance3D" parent="."]
+position = Vector3(-6.4, 2.7, -9)
+mesh = SubResource("LampPoleMesh")
+surface_material_override/0 = SubResource("NeonMat")
+
+[node name="LampArmA" type="MeshInstance3D" parent="."]
+position = Vector3(-5.95, 5.35, -9)
+mesh = SubResource("LampArmMesh")
+surface_material_override/0 = SubResource("NeonMat")
+
+[node name="LampPoleB" type="MeshInstance3D" parent="."]
+position = Vector3(6.4, 2.7, 9)
+mesh = SubResource("LampPoleMesh")
+surface_material_override/0 = SubResource("NeonMat")
+
+[node name="LampArmB" type="MeshInstance3D" parent="."]
+position = Vector3(5.95, 5.35, 9)
+mesh = SubResource("LampArmMesh")
+surface_material_override/0 = SubResource("NeonMat")
+
+[node name="NeonAdvertisement" type="MeshInstance3D" parent="."]
+position = Vector3(-12, 11.2, -19.85)
+mesh = SubResource("SignMesh")
+surface_material_override/0 = SubResource("SignMat")
