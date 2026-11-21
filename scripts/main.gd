@@ -47,7 +47,7 @@ func _create_environment() -> void:
     moon.light_energy = 0.72
     moon.shadow_enabled = true
     moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-    moon.directional_shadow_max_distance = 85.0
+    moon.directional_shadow_max_distance = 48.0
     moon.shadow_bias = 0.06
     moon.shadow_normal_bias = 1.2
     add_child(moon)
@@ -90,13 +90,13 @@ func _create_roads() -> void:
         _add_box(Vector3(0, 0.07, road_offset + 3.0), Vector3(150, 0.12, 0.65), sidewalk_material)
 
 func _create_city() -> void:
-    for x in range(-4, 5):
-        for z in range(-4, 5):
+    for x in range(-3, 4):
+        for z in range(-3, 4):
             if abs(x) <= 1 and abs(z) <= 1:
                 continue
             var width := rng.randf_range(5.0, 7.5)
             var depth := rng.randf_range(5.0, 7.5)
-            var floors := rng.randi_range(4, 12)
+            var floors := rng.randi_range(4, 8)
             var height := float(floors) * rng.randf_range(2.7, 3.2)
             var center := Vector3(x * CITY_SPACING, height * 0.5 + 0.12, z * CITY_SPACING)
             _create_building(center, Vector3(width, height, depth), floors)
@@ -128,8 +128,8 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
     var ledge := _material(Color(0.07, 0.085, 0.12), 0.68, 0.48)
 
     # Recessed-looking window grids on all four sides.
-    var cols := 2 if dimensions.x < 6.2 else 3
-    var rows := max(2, floors - 1)
+    var cols := 2
+    var rows := min(5, max(2, floors - 1))
     for floor_index in range(rows):
         var y := -dimensions.y * 0.5 + 1.15 + float(floor_index) * (dimensions.y - 1.2) / rows
         for col in range(cols):
@@ -137,7 +137,7 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
             var w := dimensions.x / float(cols) * 0.62
             _add_box(center + Vector3(x, y, dimensions.z * 0.5 + 0.035), Vector3(w, 0.82, 0.045), glass)
             _add_box(center + Vector3(x, y, -dimensions.z * 0.5 - 0.035), Vector3(w, 0.82, 0.045), glass)
-        var side_cols := 2
+        var side_cols := 1
         for col in range(side_cols):
             var z := -dimensions.z * 0.5 + (float(col) + 0.5) * dimensions.z / side_cols
             var w_side := dimensions.z / float(side_cols) * 0.58
@@ -145,7 +145,7 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
             _add_box(center + Vector3(-dimensions.x * 0.5 - 0.035, y, z), Vector3(0.045, 0.82, w_side), glass)
 
     # Strong horizontal floor bands and vertical structural ribs.
-    for floor_index in range(1, floors):
+    for floor_index in range(1, min(floors, 6)):
         var band_y := -dimensions.y * 0.5 + float(floor_index) * dimensions.y / floors
         _add_box(center + Vector3(0, band_y, dimensions.z * 0.5 + 0.06), Vector3(dimensions.x + 0.18, 0.10, 0.12), ledge)
         _add_box(center + Vector3(0, band_y, -dimensions.z * 0.5 - 0.06), Vector3(dimensions.x + 0.18, 0.10, 0.12), ledge)
@@ -164,11 +164,11 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
     _add_box(center + Vector3(0, roof_y + 0.12, -dimensions.z * 0.5), Vector3(dimensions.x + 0.3, 0.24, 0.22), ledge)
     _add_box(center + Vector3(dimensions.x * 0.5, roof_y + 0.12, 0), Vector3(0.22, 0.24, dimensions.z), ledge)
     _add_box(center + Vector3(-dimensions.x * 0.5, roof_y + 0.12, 0), Vector3(0.22, 0.24, dimensions.z), ledge)
-    for unit in range(2):
+    for unit in range(1):
         var ux := -dimensions.x * 0.22 + float(unit) * dimensions.x * 0.42
         _add_box(center + Vector3(ux, roof_y + 0.48, 0), Vector3(0.9, 0.48, 0.75), frame)
         _add_box(center + Vector3(ux, roof_y + 0.74, 0), Vector3(0.62, 0.06, 0.5), ledge)
-    if rng.randf() > 0.35:
+    if rng.randf() > 0.65:
         _add_box(center + Vector3(0, roof_y + 1.65, 0), Vector3(0.07, 1.9, 0.07), frame)
         _add_box(center + Vector3(0, roof_y + 2.35, 0), Vector3(0.62, 0.07, 0.07), glass)
 
