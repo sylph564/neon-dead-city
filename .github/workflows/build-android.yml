@@ -14,6 +14,9 @@ jobs:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+      GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /github/home/.android/debug.keystore
+      GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+      GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -24,11 +27,15 @@ jobs:
           apt-get install -y openjdk-17-jdk wget unzip
           mkdir -p "$ANDROID_HOME/cmdline-tools"
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/android-tools.zip
-          mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
+          mkdir -p /tmp/android-tools
           unzip -q /tmp/android-tools.zip -d /tmp/android-tools
-          mv /tmp/android-tools/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest/"
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
+          cp -r /tmp/android-tools/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest/"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME"             "platform-tools"             "platforms;android-34"             "build-tools;34.0.0"             "cmdline-tools;latest"             "cmake;3.10.2.4988404"             "ndk;23.2.8568313"
+          test -x "$ANDROID_HOME/platform-tools/adb"
+          test -d "$ANDROID_HOME/ndk/23.2.8568313"
+          test -d "$ANDROID_HOME/cmake/3.10.2.4988404"
 
       - name: Install Godot Android export templates
         run: |
@@ -41,21 +48,25 @@ jobs:
         run: |
           mkdir -p "$HOME/.android"
           keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          mkdir -p "$HOME/.config/godot"
-          cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
-          [gd_resource type="EditorSettings" format=3]
-          [resource]
-          export/android/android_sdk_path = "$ANDROID_HOME"
-          export/android/java_sdk_path = "$JAVA_HOME"
-          export/android/debug_keystore = "$HOME/.android/debug.keystore"
-          export/android/debug_keystore_user = "androiddebugkey"
-          export/android/debug_keystore_pass = "android"
-          EOF
+
+      - name: Validate Android toolchain
+        run: |
+          java -version
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+          "$ANDROID_HOME/platform-tools/adb" version
+          ls -la "$ANDROID_HOME/ndk/23.2.8568313"
+          ls -la "$ANDROID_HOME/cmake/3.10.2.4988404"
+          ls -la "$HOME/.local/share/godot/export_templates/4.3.stable"
 
       - name: Build debug APK
         run: |
           mkdir -p build
           godot --headless --verbose --path . --export-debug "Android" build/NEON-DEAD-CITY.apk
+
+      - name: Verify APK
+        run: |
+          test -s build/NEON-DEAD-CITY.apk
+          ls -lh build/NEON-DEAD-CITY.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
