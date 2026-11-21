@@ -11,6 +11,7 @@ func _ready() -> void:
     _create_roads()
     _create_city()
     _create_street_lights()
+    _create_street_details()
     var player := PLAYER_SCENE.instantiate()
     player.position = Vector3(0, 0.15, 8)
     add_child(player)
@@ -42,7 +43,12 @@ func _create_environment() -> void:
     var moon := DirectionalLight3D.new()
     moon.rotation_degrees = Vector3(-48, -25, 0)
     moon.light_color = Color(0.48, 0.58, 1.0)
-    moon.light_energy = 0.55
+    moon.light_energy = 0.72
+    moon.shadow_enabled = true
+    moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+    moon.directional_shadow_max_distance = 85.0
+    moon.shadow_bias = 0.06
+    moon.shadow_normal_bias = 1.2
     add_child(moon)
 
 func _create_ground() -> void:
@@ -163,6 +169,38 @@ func _create_street_lights() -> void:
             var pos := Vector3((x + 0.5) * CITY_SPACING, 0, (z + 0.5) * CITY_SPACING)
             _add_box(pos + Vector3(0, 2.1, 0), Vector3(0.12, 4.2, 0.12), pole_material)
             _add_box(pos + Vector3(0.45, 4.15, 0), Vector3(1.0, 0.12, 0.22), lamp_material)
+
+func _create_street_details() -> void:
+    # Small, readable street props around the starting blocks.
+    var metal := _material(Color(0.045, 0.055, 0.075), 0.62, 0.72)
+    var dark := _material(Color(0.018, 0.022, 0.032), 0.9)
+    var cyan := _emissive_material(Color(0.015, 0.48, 0.72), 1.8)
+    var magenta := _emissive_material(Color(0.72, 0.035, 0.32), 1.5)
+
+    # Vending kiosks and illuminated street signs.
+    for i in range(4):
+        var x := -13.0 + float(i) * 8.5
+        _add_box(Vector3(x, 1.0, 3.0), Vector3(1.15, 2.0, 0.8), metal)
+        _add_box(Vector3(x, 1.25, 2.57), Vector3(0.82, 0.92, 0.035), cyan if i % 2 == 0 else magenta)
+        _add_box(Vector3(x, 2.15, 3.0), Vector3(1.25, 0.12, 0.9), dark)
+
+    # Benches, bins and utility cabinets along the central sidewalks.
+    for z in [-12.0, 12.0]:
+        _add_box(Vector3(-4.0, 0.48, z), Vector3(1.8, 0.12, 0.55), metal)
+        _add_box(Vector3(-4.0, 0.72, z + 0.2), Vector3(1.8, 0.42, 0.1), metal)
+        _add_box(Vector3(4.0, 0.65, z), Vector3(0.65, 1.3, 0.65), dark)
+        _add_box(Vector3(4.0, 1.32, z), Vector3(0.68, 0.06, 0.68), cyan)
+
+    # Crosswalk bars at the nearest intersection.
+    var paint := _material(Color(0.48, 0.56, 0.65), 0.9)
+    for i in range(7):
+        _add_box(Vector3(-3.0 + float(i) * 0.9, 0.055, 5.4), Vector3(0.48, 0.025, 1.5), paint)
+        _add_box(Vector3(5.4, 0.055, -3.0 + float(i) * 0.9), Vector3(1.5, 0.025, 0.48), paint)
+
+    # A large glowing district marker visible from the starting street.
+    _add_box(Vector3(0, 5.2, -13.5), Vector3(7.5, 1.25, 0.22), dark)
+    _add_box(Vector3(0, 5.2, -13.36), Vector3(7.15, 0.08, 0.035), magenta)
+    _add_box(Vector3(0, 5.2, -13.32), Vector3(0.08, 0.78, 0.035), cyan)
 
 func _add_box(pos: Vector3, dimensions: Vector3, material: Material) -> void:
     var mesh := MeshInstance3D.new()
