@@ -14,9 +14,6 @@ jobs:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
-      GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /github/home/.android/debug.keystore
-      GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
-      GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -32,7 +29,9 @@ jobs:
           mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
           cp -r /tmp/android-tools/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest/"
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" \
+            "platform-tools" "platforms;android-34" "build-tools;34.0.0" \
+            "ndk;23.2.8568313" "cmake;3.10.2.4988404"
 
       - name: Install Godot Android export templates
         run: |
@@ -40,9 +39,8 @@ jobs:
           wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz -O /tmp/godot-templates.tpz
           unzip -q /tmp/godot-templates.tpz -d /tmp/godot-templates
           cp /tmp/godot-templates/templates/* "$HOME/.local/share/godot/export_templates/4.3.stable/"
-          printf "4.3.stable\n" > "$HOME/.local/share/godot/export_templates/4.3.stable/version.txt"
 
-      - name: Configure Android signing and Godot SDK paths
+      - name: Configure Android signing and SDK paths
         run: |
           mkdir -p "$HOME/.android" "$HOME/.config/godot"
           keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
@@ -52,13 +50,22 @@ jobs:
           export/android/android_sdk_path = "$ANDROID_HOME"
           export/android/java_sdk_path = "$JAVA_HOME"
           EOF
-          test -f "$HOME/.android/debug.keystore"
-          test -x "$JAVA_HOME/bin/java"
-          test -x "$ANDROID_HOME/platform-tools/adb"
+          sed -i "s|/github/home/.android/debug.keystore|$HOME/.android/debug.keystore|g" export_presets.cfg
 
-      - name: Validate Godot Android configuration
+      - name: Diagnose Android export preset
         run: |
-          godot --headless --editor --path . --quit --verbose
+          echo "HOME=$HOME"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "JAVA_HOME=$JAVA_HOME"
+          test -d "$ANDROID_HOME/platforms/android-34"
+          test -d "$ANDROID_HOME/build-tools/34.0.0"
+          test -d "$ANDROID_HOME/ndk/23.2.8568313"
+          test -d "$ANDROID_HOME/cmake/3.10.2.4988404"
+          test -f "$HOME/.android/debug.keystore"
+          ls -la "$HOME/.local/share/godot/export_templates/4.3.stable"
+          echo "---- Android preset ----"
+          cat export_presets.cfg
+          mkdir -p build
           godot --headless --verbose --path . --export-debug "Android" build/NEON-DEAD-CITY.apk
 
       - name: Verify APK
