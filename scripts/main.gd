@@ -1,13 +1,16 @@
 extends Node3D
 
 const PLAYER_SCENE: PackedScene = preload("res://scenes/player.tscn")
+const CITY_SPACING := 18.0
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
     rng.seed = 5642026
     _create_environment()
     _create_ground()
+    _create_roads()
     _create_city()
+    _create_street_lights()
     var player := PLAYER_SCENE.instantiate()
     player.position = Vector3(0, 0.15, 8)
     add_child(player)
@@ -28,14 +31,19 @@ func _create_environment() -> void:
     environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
     environment.ambient_light_color = Color(0.28, 0.34, 0.52)
     environment.ambient_light_energy = 0.45
+    environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+    environment.tonemap_exposure = 1.15
+    environment.fog_enabled = true
+    environment.fog_light_color = Color(0.035, 0.055, 0.12)
+    environment.fog_density = 0.006
     world.environment = environment
     add_child(world)
 
-    var sun := DirectionalLight3D.new()
-    sun.rotation_degrees = Vector3(-48, -25, 0)
-    sun.light_color = Color(0.48, 0.58, 1.0)
-    sun.light_energy = 0.55
-    add_child(sun)
+    var moon := DirectionalLight3D.new()
+    moon.rotation_degrees = Vector3(-48, -25, 0)
+    moon.light_color = Color(0.48, 0.58, 1.0)
+    moon.light_energy = 0.55
+    add_child(moon)
 
 func _create_ground() -> void:
     var body := StaticBody3D.new()
@@ -57,16 +65,33 @@ func _create_ground() -> void:
     body.add_child(collision)
     add_child(body)
 
+func _create_roads() -> void:
+    var road_material := _material(Color(0.012, 0.016, 0.026), 0.82)
+    var line_material := _emissive_material(Color(0.02, 0.32, 0.48), 1.1)
+    var sidewalk_material := _material(Color(0.055, 0.065, 0.085), 0.9)
+    for i in range(-4, 4):
+        var road_offset := (float(i) + 0.5) * CITY_SPACING
+        _add_box(Vector3(road_offset, 0.012, 0), Vector3(5.2, 0.025, 150), road_material)
+        _add_box(Vector3(0, 0.012, road_offset), Vector3(150, 0.025, 5.2), road_material)
+        _add_box(Vector3(road_offset - 2.45, 0.035, 0), Vector3(0.08, 0.025, 150), line_material)
+        _add_box(Vector3(road_offset + 2.45, 0.035, 0), Vector3(0.08, 0.025, 150), line_material)
+        _add_box(Vector3(0, 0.035, road_offset - 2.45), Vector3(150, 0.025, 0.08), line_material)
+        _add_box(Vector3(0, 0.035, road_offset + 2.45), Vector3(150, 0.025, 0.08), line_material)
+        _add_box(Vector3(road_offset - 3.0, 0.07, 0), Vector3(0.65, 0.12, 150), sidewalk_material)
+        _add_box(Vector3(road_offset + 3.0, 0.07, 0), Vector3(0.65, 0.12, 150), sidewalk_material)
+        _add_box(Vector3(0, 0.07, road_offset - 3.0), Vector3(150, 0.12, 0.65), sidewalk_material)
+        _add_box(Vector3(0, 0.07, road_offset + 3.0), Vector3(150, 0.12, 0.65), sidewalk_material)
+
 func _create_city() -> void:
     for x in range(-4, 5):
         for z in range(-4, 5):
             if abs(x) <= 1 and abs(z) <= 1:
                 continue
-            var width := rng.randf_range(5.0, 8.0)
-            var depth := rng.randf_range(5.0, 8.0)
-            var floors := rng.randi_range(3, 12)
-            var height := float(floors) * rng.randf_range(2.7, 3.4)
-            var center := Vector3(x * 18.0, height * 0.5, z * 18.0)
+            var width := rng.randf_range(5.0, 7.5)
+            var depth := rng.randf_range(5.0, 7.5)
+            var floors := rng.randi_range(4, 12)
+            var height := float(floors) * rng.randf_range(2.7, 3.2)
+            var center := Vector3(x * CITY_SPACING, height * 0.5 + 0.12, z * CITY_SPACING)
             _create_building(center, Vector3(width, height, depth), floors)
 
 func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void:
@@ -76,11 +101,8 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
     var box := BoxMesh.new()
     box.size = dimensions
     mesh.mesh = box
-    var facade := StandardMaterial3D.new()
-    var shade := rng.randf_range(0.025, 0.09)
-    facade.albedo_color = Color(shade, shade * 1.2, shade * 1.9)
-    facade.metallic = 0.25
-    facade.roughness = 0.72
+    var shade := rng.randf_range(0.025, 0.075)
+    var facade := _material(Color(shade, shade * 1.2, shade * 1.9), 0.72, 0.22)
     mesh.material_override = facade
     body.add_child(mesh)
     var collision := CollisionShape3D.new()
@@ -90,26 +112,86 @@ func _create_building(center: Vector3, dimensions: Vector3, floors: int) -> void
     body.add_child(collision)
     add_child(body)
 
+    var window_colors := [
+        Color(0.02, 0.65, 0.95),
+        Color(0.85, 0.12, 0.55),
+        Color(0.95, 0.55, 0.12),
+        Color(0.18, 0.8, 0.62)
+    ]
+    var glow_color: Color = window_colors[rng.randi_range(0, window_colors.size() - 1)]
+    var glow := _emissive_material(glow_color, 1.25)
     for floor_index in range(1, floors):
+        if rng.randf() < 0.18:
+            continue
+        var y := -dimensions.y * 0.5 + floor_index * dimensions.y / floors
         for side in [-1.0, 1.0]:
             var window := MeshInstance3D.new()
             var window_mesh := BoxMesh.new()
-            window_mesh.size = Vector3(dimensions.x * 0.48, 0.12, 0.035)
+            window_mesh.size = Vector3(dimensions.x * 0.48, 0.13, 0.035)
             window.mesh = window_mesh
-            var glow := StandardMaterial3D.new()
-            glow.albedo_color = Color(0.02, rng.randf_range(0.25, 0.8), rng.randf_range(0.55, 1.0))
-            glow.emission_enabled = true
-            glow.emission = glow.albedo_color
-            glow.emission_energy_multiplier = 1.3
             window.material_override = glow
-            window.position = center + Vector3(0, -dimensions.y * 0.5 + floor_index * dimensions.y / floors, side * (dimensions.z * 0.5 + 0.025))
+            window.position = center + Vector3(0, y, side * (dimensions.z * 0.5 + 0.025))
             add_child(window)
+
+    # A few restrained vertical neon strips make silhouettes readable at a distance.
+    var strip_material := _emissive_material(glow_color, 0.9)
+    for side in [-1.0, 1.0]:
+        var strip := MeshInstance3D.new()
+        var strip_mesh := BoxMesh.new()
+        strip_mesh.size = Vector3(0.09, dimensions.y * 0.72, 0.045)
+        strip.mesh = strip_mesh
+        strip.material_override = strip_material
+        strip.position = center + Vector3(side * (dimensions.x * 0.5 + 0.035), 0, dimensions.z * 0.5 + 0.04)
+        add_child(strip)
+
+    # Rooftop ventilation units add a little skyline detail without expensive meshes.
+    var roof_unit := MeshInstance3D.new()
+    var roof_mesh := BoxMesh.new()
+    roof_mesh.size = Vector3(dimensions.x * 0.28, 0.65, dimensions.z * 0.24)
+    roof_unit.mesh = roof_mesh
+    roof_unit.material_override = _material(Color(0.035, 0.045, 0.065), 0.88)
+    roof_unit.position = center + Vector3(0, dimensions.y * 0.5 + 0.32, 0)
+    add_child(roof_unit)
+
+func _create_street_lights() -> void:
+    var pole_material := _material(Color(0.055, 0.065, 0.085), 0.7, 0.5)
+    var lamp_material := _emissive_material(Color(0.08, 0.55, 0.9), 1.8)
+    for x in range(-4, 4, 2):
+        for z in range(-4, 4, 2):
+            if abs(x) <= 1 and abs(z) <= 1:
+                continue
+            var pos := Vector3((x + 0.5) * CITY_SPACING, 0, (z + 0.5) * CITY_SPACING)
+            _add_box(pos + Vector3(0, 2.1, 0), Vector3(0.12, 4.2, 0.12), pole_material)
+            _add_box(pos + Vector3(0.45, 4.15, 0), Vector3(1.0, 0.12, 0.22), lamp_material)
+
+func _add_box(pos: Vector3, dimensions: Vector3, material: Material) -> void:
+    var mesh := MeshInstance3D.new()
+    var box := BoxMesh.new()
+    box.size = dimensions
+    mesh.mesh = box
+    mesh.material_override = material
+    mesh.position = pos
+    add_child(mesh)
+
+func _material(color: Color, roughness: float = 0.8, metallic: float = 0.0) -> StandardMaterial3D:
+    var material := StandardMaterial3D.new()
+    material.albedo_color = color
+    material.roughness = roughness
+    material.metallic = metallic
+    return material
+
+func _emissive_material(color: Color, energy: float) -> StandardMaterial3D:
+    var material := _material(color, 0.35, 0.15)
+    material.emission_enabled = true
+    material.emission = color
+    material.emission_energy_multiplier = energy
+    return material
 
 func _create_hud() -> void:
     var layer := CanvasLayer.new()
     add_child(layer)
     var label := Label.new()
-    label.text = "NEON: DEAD CITY  //  PROTOTYPE\nЛевый палец — движение  •  Правый — обзор"
+    label.text = "NEON: DEAD CITY  //  NIGHT DISTRICT\nЛевый палец — движение  •  Правый — обзор"
     label.position = Vector2(24, 20)
     label.add_theme_font_size_override("font_size", 18)
     label.add_theme_color_override("font_color", Color(0.35, 0.9, 1.0))
