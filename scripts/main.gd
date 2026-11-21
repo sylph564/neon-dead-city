@@ -4,19 +4,32 @@ const PLAYER_SCENE: PackedScene = preload("res://scenes/player.tscn")
 const CITY_SPACING := 18.0
 var rng := RandomNumberGenerator.new()
 
+var startup_label: Label
+
 func _ready() -> void:
+    # Show a visible startup screen before generating the city.
+    startup_label = _create_hud()
+    startup_label.text = "NEON: DEAD CITY\nЗАГРУЗКА ГОРОДА..."
+    await get_tree().process_frame
+
     rng.seed = 5642026
     _create_environment()
+    startup_label.text = "NEON: DEAD CITY\nСОЗДАНИЕ УЛИЦ..."
+    await get_tree().process_frame
     _create_ground()
     _create_roads()
-    _create_city()
+    startup_label.text = "NEON: DEAD CITY\nПОСТРОЙКА РАЙОНА..."
+    await get_tree().process_frame
+    await _create_city()
+    startup_label.text = "NEON: DEAD CITY\nОСВЕЩЕНИЕ И ДЕТАЛИ..."
+    await get_tree().process_frame
     _create_street_lights()
     _create_street_details()
     _create_district_props()
     var player := PLAYER_SCENE.instantiate()
     player.position = Vector3(0, 0.15, 8)
     add_child(player)
-    _create_hud()
+    startup_label.text = "NEON: DEAD CITY  //  NIGHT DISTRICT\nЛевый палец — движение  •  Правый — обзор"
 
 func _create_environment() -> void:
     var world := WorldEnvironment.new()
@@ -45,7 +58,7 @@ func _create_environment() -> void:
     moon.rotation_degrees = Vector3(-48, -25, 0)
     moon.light_color = Color(0.48, 0.58, 1.0)
     moon.light_energy = 0.72
-    moon.shadow_enabled = true
+    moon.shadow_enabled = false
     moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
     moon.directional_shadow_max_distance = 48.0
     moon.shadow_bias = 0.06
@@ -91,6 +104,7 @@ func _create_roads() -> void:
 
 func _create_city() -> void:
     for x in range(-3, 4):
+        await get_tree().process_frame
         for z in range(-3, 4):
             if abs(x) <= 1 and abs(z) <= 1:
                 continue
@@ -305,12 +319,14 @@ func _emissive_material(color: Color, energy: float) -> StandardMaterial3D:
     material.emission_energy_multiplier = energy
     return material
 
-func _create_hud() -> void:
+func _create_hud() -> Label:
     var layer := CanvasLayer.new()
+    layer.layer = 10
     add_child(layer)
     var label := Label.new()
-    label.text = "NEON: DEAD CITY  //  NIGHT DISTRICT\nЛевый палец — движение  •  Правый — обзор"
+    label.text = "NEON: DEAD CITY\nЗАПУСК..."
     label.position = Vector2(24, 20)
-    label.add_theme_font_size_override("font_size", 18)
+    label.add_theme_font_size_override("font_size", 22)
     label.add_theme_color_override("font_color", Color(0.35, 0.9, 1.0))
     layer.add_child(label)
+    return label
