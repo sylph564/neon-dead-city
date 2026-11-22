@@ -941,36 +941,36 @@ mesh = SubResource("ShopSignMesh")
 surface_material_override/0 = SubResource("ShopSignPink")
 
 [node name="CarWheelFL" type="MeshInstance3D" parent="."]
-position = Vector3(1.02, 0.35, 1.55)
+position = Vector3(1.78, 0.35, 1.55)
 rotation_degrees = Vector3(0, 0, 90)
 mesh = SubResource("WheelMesh")
 surface_material_override/0 = SubResource("TireMat")
 
 [node name="CarWheelFR" type="MeshInstance3D" parent="."]
-position = Vector3(-1.02, 0.35, 1.55)
+position = Vector3(3.82, 0.35, 1.55)
 rotation_degrees = Vector3(0, 0, 90)
 mesh = SubResource("WheelMesh")
 surface_material_override/0 = SubResource("TireMat")
 
 [node name="CarWheelRL" type="MeshInstance3D" parent="."]
-position = Vector3(1.02, 0.35, 4.45)
+position = Vector3(1.78, 0.35, 4.45)
 rotation_degrees = Vector3(0, 0, 90)
 mesh = SubResource("WheelMesh")
 surface_material_override/0 = SubResource("TireMat")
 
 [node name="CarWheelRR" type="MeshInstance3D" parent="."]
-position = Vector3(-1.02, 0.35, 4.45)
+position = Vector3(3.82, 0.35, 4.45)
 rotation_degrees = Vector3(0, 0, 90)
 mesh = SubResource("WheelMesh")
 surface_material_override/0 = SubResource("TireMat")
 
 [node name="CarHeadlightLeft" type="MeshInstance3D" parent="."]
-position = Vector3(-0.72, 0.7, 0.88)
+position = Vector3(2.08, 0.7, 0.88)
 mesh = SubResource("LightMesh")
 surface_material_override/0 = SubResource("HeadlightMat")
 
 [node name="CarHeadlightRight" type="MeshInstance3D" parent="."]
-position = Vector3(0.72, 0.7, 0.88)
+position = Vector3(3.52, 0.7, 0.88)
 mesh = SubResource("LightMesh")
 surface_material_override/0 = SubResource("HeadlightMat")
 
