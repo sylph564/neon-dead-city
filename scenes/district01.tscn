@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3]
+[gd_scene load_steps=46 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Shader" path="res://materials/city_surface.gdshader" id="2_surface"]
@@ -172,6 +172,27 @@ albedo_color = Color(0.85, 0.08, 0.34, 1)
 emission_enabled = true
 emission = Color(0.95, 0.04, 0.28, 1)
 emission_energy_multiplier = 1.7
+
+
+[sub_resource type="BoxMesh" id="CarSpoilerMesh"]
+size = Vector3(2.1, 0.12, 0.38)
+
+[sub_resource type="BoxMesh" id="CarTrimMesh"]
+size = Vector3(1.25, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="TailLightMesh"]
+size = Vector3(0.42, 0.18, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="TailLightMat"]
+albedo_color = Color(0.95, 0.035, 0.12, 1)
+emission_enabled = true
+emission = Color(0.9, 0.015, 0.06, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="StandardMaterial3D" id="CarSpoilerMat"]
+albedo_color = Color(0.045, 0.055, 0.075, 1)
+metallic = 0.72
+roughness = 0.32
 
 [node name="Main" type="Node3D"]
 
@@ -952,3 +973,66 @@ surface_material_override/0 = SubResource("HeadlightMat")
 position = Vector3(0.72, 0.7, 0.88)
 mesh = SubResource("LightMesh")
 surface_material_override/0 = SubResource("HeadlightMat")
+
+[node name="HomeAWindowLeft" type="MeshInstance3D" parent="."]
+position = Vector3(-36.2, 3.0, -6.18)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+[node name="HomeAWindowRight" type="MeshInstance3D" parent="."]
+position = Vector3(-31.8, 3.0, -6.18)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("ShopSignOrange")
+
+[node name="HomeBWindowLeft" type="MeshInstance3D" parent="."]
+position = Vector3(31.8, 3.0, 6.18)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("WindowMat")
+
+[node name="HomeBWindowRight" type="MeshInstance3D" parent="."]
+position = Vector3(36.2, 3.0, 6.18)
+mesh = SubResource("WindowMesh")
+surface_material_override/0 = SubResource("ShopSignPink")
+
+[node name="CarRearSpoiler" type="MeshInstance3D" parent="."]
+position = Vector3(2.8, 1.62, 4.78)
+mesh = SubResource("CarSpoilerMesh")
+surface_material_override/0 = SubResource("CarSpoilerMat")
+
+[node name="CarRearLightLeft" type="MeshInstance3D" parent="."]
+position = Vector3(2.05, 0.72, 5.12)
+mesh = SubResource("TailLightMesh")
+surface_material_override/0 = SubResource("TailLightMat")
+
+[node name="CarRearLightRight" type="MeshInstance3D" parent="."]
+position = Vector3(3.55, 0.72, 5.12)
+mesh = SubResource("TailLightMesh")
+surface_material_override/0 = SubResource("TailLightMat")
+
+[node name="CarSideAccentLeft" type="MeshInstance3D" parent="."]
+position = Vector3(1.68, 0.84, 3.0)
+rotation_degrees = Vector3(0, 90, 0)
+mesh = SubResource("CarTrimMesh")
+surface_material_override/0 = SubResource("NeonMat")
+
+[node name="CarSideAccentRight" type="MeshInstance3D" parent="."]
+position = Vector3(3.92, 0.84, 3.0)
+rotation_degrees = Vector3(0, 90, 0)
+mesh = SubResource("CarTrimMesh")
+surface_material_override/0 = SubResource("NeonMat")
+
+[node name="CrosswalkStripe01" type="MeshInstance3D" parent="."]
+position = Vector3(-3.8, 0.04, 0)
+mesh = SubResource("StreetMarkMesh")
+surface_material_override/0 = SubResource("StreetMarkMat")
+
+[node name="CrosswalkStripe02" type="MeshInstance3D" parent="."]
+position = Vector3(-2.7, 0.04, 0)
+mesh = SubResource("StreetMarkMesh")
+surface_material_override/0 = SubResource("StreetMarkMat")
+
+[node name="CrosswalkStripe03" type="MeshInstance3D" parent="."]
+position = Vector3(-1.6, 0.04, 0)
+mesh = SubResource("StreetMarkMesh")
+surface_material_override/0 = SubResource("StreetMarkMat")
+
