@@ -1,6 +1,6 @@
 extends Node
 
-@onready var player = get_parent()
+@onready var player: CharacterBody3D = get_parent() as CharacterBody3D
 var installed = {"Sandevistan": true, "Mantis Blades": true, "Gorilla Arms": true, "Pulse Core": true, "Reflex Booster": true}
 var cooldowns = {}
 var skill_buttons = {}
@@ -38,7 +38,7 @@ func _create_arm_implants():
     var armor_mat = StandardMaterial3D.new()
     armor_mat.albedo_color = Color(0.34, 0.22, 0.12)
     armor_mat.metallic = 0.9
-    for pivot in [player.left_arm_pivot, player.right_arm_pivot]:
+    for pivot in [player.get("left_arm_pivot"), player.get("right_arm_pivot")]:
         if pivot == null:
             continue
         var blade = MeshInstance3D.new()
@@ -237,7 +237,7 @@ func _toggle_panel():
 func _toggle_implant(name):
     installed[name] = not installed[name]
     if player.has_method("set_cyber_implant"):
-        player.set_cyber_implant(name, installed[name])
+        player.call("set_cyber_implant", name, installed[name])
     _update_arm_implants()
     _refresh_panel()
 
@@ -280,8 +280,8 @@ func _activate(name):
                     target.take_damage(35.0)
             cooldowns[name] = now + 9000
         "Reflex Booster":
-            player.sprint_speed = 11.0
-            get_tree().create_timer(4.0, true, false, true).timeout.connect(func(): player.sprint_speed = 8.0)
+            player.set("sprint_speed", 11.0)
+            get_tree().create_timer(4.0, true, false, true).timeout.connect(func(): player.set("sprint_speed", 8.0))
             cooldowns[name] = now + 10000
 
 func _create_dummy():
