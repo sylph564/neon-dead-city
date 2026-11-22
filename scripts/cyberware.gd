@@ -71,8 +71,8 @@ func _create_interface():
     player.add_child(layer)
     var open = Button.new()
     open.text = "CYBERWARE"
-    open.position = Vector2(-220, 18)
-    open.size = Vector2(200, 54)
+    open.position = Vector2(-178, 18)
+    open.size = Vector2(160, 48)
     open.anchor_left = 1.0
     open.anchor_right = 1.0
     open.add_theme_font_size_override("font_size", 14)
@@ -81,8 +81,8 @@ func _create_interface():
 
     panel = PanelContainer.new()
     panel.set_anchors_preset(Control.PRESET_CENTER)
-    panel.position = Vector2(-235, -255)
-    panel.custom_minimum_size = Vector2(470, 510)
+    panel.position = Vector2(-185, -165)
+    panel.custom_minimum_size = Vector2(370, 330)
     panel.visible = false
     var style = StyleBoxFlat.new()
     style.bg_color = Color(0.012, 0.018, 0.03, 0.98)
@@ -92,9 +92,13 @@ func _create_interface():
     panel.add_theme_stylebox_override("panel", style)
     layer.add_child(panel)
 
+    var scroll = ScrollContainer.new()
+    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    panel.add_child(scroll)
     var list = VBoxContainer.new()
-    list.add_theme_constant_override("separation", 7)
-    panel.add_child(list)
+    list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    list.add_theme_constant_override("separation", 6)
+    scroll.add_child(list)
     var heading = Label.new()
     heading.text = "NEUROLINK  /  CYBERWARE"
     heading.add_theme_font_size_override("font_size", 20)
@@ -133,21 +137,21 @@ func _create_interface():
     _refresh_panel()
 
     var specs = [
-        ["Sandevistan", Vector2(-430, -110), Color(0.08,0.24,0.38)],
-        ["Mantis Blades", Vector2(-530, -110), Color(0.28,0.08,0.18)],
-        ["Gorilla Arms", Vector2(-630, -110), Color(0.28,0.16,0.06)],
-        ["Pulse Core", Vector2(-730, -110), Color(0.06,0.28,0.2)],
-        ["Reflex Booster", Vector2(-830, -110), Color(0.22,0.2,0.06)]
+        ["Sandevistan", Vector2(-454, 78), Color(0.08,0.24,0.38)],
+        ["Mantis Blades", Vector2(-362, 78), Color(0.28,0.08,0.18)],
+        ["Gorilla Arms", Vector2(-270, 78), Color(0.28,0.16,0.06)],
+        ["Pulse Core", Vector2(-178, 78), Color(0.06,0.28,0.2)],
+        ["Reflex Booster", Vector2(-86, 78), Color(0.22,0.2,0.06)]
     ]
     for spec in specs:
         var b = Button.new()
         b.text = spec[0].to_upper()
         b.position = spec[1]
-        b.size = Vector2(92, 58)
+        b.size = Vector2(82, 48)
         b.anchor_left = 1.0
-        b.anchor_top = 1.0
+        b.anchor_top = 0.0
         b.anchor_right = 1.0
-        b.anchor_bottom = 1.0
+        b.anchor_bottom = 0.0
         b.add_theme_font_size_override("font_size", 10)
         var bs = StyleBoxFlat.new()
         bs.bg_color = spec[2]
@@ -247,7 +251,8 @@ func _refresh_panel():
         if installed[name]:
             count += 1
     capacity_label.text = "INSTALLED SLOTS  %d / 5" % count
-    var list = panel.get_child(0)
+    var scroll = panel.get_child(0) as ScrollContainer
+    var list = scroll.get_child(0) as VBoxContainer
     for row in list.get_children():
         if row is HBoxContainer:
             var name = row.get_meta("implant_name")
@@ -288,7 +293,7 @@ func _create_dummy():
     var dummy = StaticBody3D.new()
     dummy.name = "CombatTrainingDummy"
     dummy.set_script(preload("res://scripts/damage_dummy.gd"))
-    dummy.position = player.global_position - player.global_transform.basis.z * 1.8
+    dummy.position = player.global_position - player.global_transform.basis.z * 3.2
     dummy.add_to_group("enemies")
     var shape = CollisionShape3D.new()
     var capsule = CapsuleShape3D.new()
@@ -314,5 +319,6 @@ func _create_dummy():
     readout.text = "TRAINING TARGET\nDMG 0  |  DPS 0"
     readout.font_size = 32
     readout.modulate = Color(0.35,0.95,1.0)
+    readout.billboard = BaseMaterial3D.BILLBOARD_ENABLED
     dummy.add_child(readout)
     get_tree().current_scene.add_child(dummy)
