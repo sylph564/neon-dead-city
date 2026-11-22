@@ -38,6 +38,13 @@ var punch_time := 0.0
 var punch_cooldown := 0.0
 var attack_alternate := false
 var active_attack_arm: Node3D
+var active_combat_implant := "Gorilla Arms"
+var attack_tween: Tween
+var trail_points_left: Array[Vector3] = []
+var trail_points_right: Array[Vector3] = []
+var trail_mesh_left: MeshInstance3D
+var trail_mesh_right: MeshInstance3D
+var trail_material: StandardMaterial3D
 var right_arm_pivot: Node3D
 var left_arm_pivot: Node3D
 var status_label: Label
@@ -46,12 +53,15 @@ var stamina_value := 100.0
 var equipped_implants := {"Mantis Blades": true, "Gorilla Arms": true, "Monowire": true, "Projectile Launch System": true}
 
 func _ready() -> void:
+    collision_layer = 1
+    collision_mask = 3
     if not OS.has_feature("mobile"):
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     camera.fov = 82.0
     camera_base_position = camera.position
     camera_base_rotation = camera.rotation
     _create_view_arms()
+    _create_rainbow_trails()
     _create_mobile_controls()
     _create_hud()
 
@@ -294,27 +304,7 @@ func _physics_process(delta: float) -> void:
     if attack_requested and punch_cooldown <= 0.0:
         _start_punch()
     attack_requested = false
-    if punch_time > 0.0 and active_attack_arm != null:
-        punch_time = maxf(0.0, punch_time - delta)
-        var t := 1.0 - punch_time / 0.34
-        var windup := 1.0 - smoothstep(0.0, 0.22, t)
-        var thrust := smoothstep(0.12, 0.42, t) * (1.0 - smoothstep(0.52, 1.0, t))
-        var base_x := -0.43 if active_attack_arm == left_arm_pivot else 0.43
-        if equipped_implants.get("Monowire", false):
-            active_attack_arm.rotation = Vector3(-0.35 - thrust * 0.9, (0.42 if base_x < 0.0 else -0.42) * thrust, 0.12 * thrust)
-            active_attack_arm.position = Vector3(base_x * (1.0 + thrust * 0.22), -0.39 - windup * 0.08, -0.82 - thrust * 0.78)
-        elif equipped_implants.get("Mantis Blades", false):
-            active_attack_arm.rotation = Vector3(-0.5 - thrust * 0.65, (0.5 if base_x < 0.0 else -0.5) * thrust, 0.18 * thrust)
-            active_attack_arm.position = Vector3(base_x * (1.0 + thrust * 0.12), -0.39 - windup * 0.07, -0.82 - thrust * 0.62)
-        else:
-            active_attack_arm.rotation = Vector3(-0.22 + windup * 0.35 - thrust * 1.05, -0.08 if base_x < 0.0 else 0.08, 0.04)
-            active_attack_arm.position = Vector3(base_x, -0.39 - windup * 0.07, -0.82 - thrust * 0.58)
-    else:
-        right_arm_pivot.rotation = right_arm_pivot.rotation.lerp(Vector3.ZERO, delta * 16.0)
-        right_arm_pivot.position = right_arm_pivot.position.lerp(Vector3(0.43, -0.39, -0.82), delta * 16.0)
-        left_arm_pivot.rotation = left_arm_pivot.rotation.lerp(Vector3.ZERO, delta * 16.0)
-        left_arm_pivot.position = left_arm_pivot.position.lerp(Vector3(-0.43, -0.39 + sin(bob_time) * 0.012, -0.82), delta * 16.0)
-        active_attack_arm = null
+    _update_rainbow_trails(delta)
 
     if running and horizontal_speed > 0.25:
         stamina_value = maxf(0.0, stamina_value - delta * 22.0)
@@ -328,28 +318,159 @@ func _physics_process(delta: float) -> void:
 func _start_punch() -> void:
     attack_alternate = not attack_alternate
     active_attack_arm = left_arm_pivot if attack_alternate else right_arm_pivot
-    punch_time = 0.34
-    punch_cooldown = 0.48
-    _try_hit_target()
+    var base_x := -0.43 if attack_alternate else 0.43
+    var home_position := Vector3(base_x, -0.39, -0.82)
+    punch_cooldown = 0.42 if active_combat_implant == "Gorilla Arms" else 0.32
+    punch_time = 0.38
+    if is_instance_valid(attack_tween):
+        attack_tween.kill()
+    attack_tween = create_tween()
+    attack_tween.set_trans(Tween.TRANS_CUBIC)
+    attack_tween.set_ease(Tween.EASE_OUT)
+    var windup_rotation := Vector3(-0.18, -0.34 if attack_alternate else 0.34, -0.16 if attack_alternate else 0.16)
+    var strike_rotation := Vector3(-0.95, 0.48 if attack_alternate else -0.48, 0.24 if attack_alternate else -0.24)
+    var strike_position := home_position + Vector3(0.0, -0.02, -0.58)
+    match active_combat_implant:
+        "Mantis Blades":
+            windup_rotation = Vector3(0.48, -0.72 if attack_alternate else 0.72, -0.62 if attack_alternate else 0.62)
+            strike_rotation = Vector3(-0.82, 1.12 if attack_alternate else -1.12, 0.92 if attack_alternate else -0.92)
+            strike_position = home_position + Vector3(0.0, 0.06, -0.72)
+        "Monowire":
+            windup_rotation = Vector3(0.62, -0.82 if attack_alternate else 0.82, -0.28 if attack_alternate else 0.28)
+            strike_rotation = Vector3(-1.12, 0.95 if attack_alternate else -0.95, 0.42 if attack_alternate else -0.42)
+            strike_position = home_position + Vector3(0.0, 0.02, -0.92)
+        "Gorilla Arms":
+            windup_rotation = Vector3(0.72, -0.18 if attack_alternate else 0.18, 0.12 if attack_alternate else -0.12)
+            strike_rotation = Vector3(-1.42, 0.16 if attack_alternate else -0.16, 0.05)
+            strike_position = home_position + Vector3(0.0, -0.10, -0.78)
+    attack_tween.tween_property(active_attack_arm, "position", home_position + Vector3(0.0, -0.10, 0.16), 0.075)
+    attack_tween.parallel().tween_property(active_attack_arm, "rotation", windup_rotation, 0.075)
+    attack_tween.tween_property(active_attack_arm, "position", strike_position, 0.105)
+    attack_tween.parallel().tween_property(active_attack_arm, "rotation", strike_rotation, 0.105)
+    attack_tween.tween_callback(_try_hit_target)
+    attack_tween.tween_property(active_attack_arm, "position", home_position + Vector3(0.0, 0.035, -0.16), 0.09)
+    attack_tween.parallel().tween_property(active_attack_arm, "rotation", strike_rotation * 0.38, 0.09)
+    attack_tween.tween_property(active_attack_arm, "position", home_position, 0.16)
+    attack_tween.parallel().tween_property(active_attack_arm, "rotation", Vector3.ZERO, 0.16)
+    if active_combat_implant == "Gorilla Arms":
+        _camera_impact(0.11, 0.045)
+    elif active_combat_implant == "Mantis Blades":
+        _camera_impact(0.045, 0.025)
+
+func _camera_impact(fov_kick: float, shake: float) -> void:
+    var base_fov := 96.0 if bool(get_meta("sandevistan_active", false)) else 82.0
+    camera.fov = base_fov + fov_kick * 40.0
+    var origin := camera.position
+    var kick := create_tween()
+    kick.tween_property(camera, "position", origin + Vector3(0.0, -shake, 0.055), 0.045)
+    kick.tween_property(camera, "position", origin, 0.16)
+    kick.parallel().tween_property(camera, "fov", base_fov, 0.18)
+
+func set_active_combat_implant(name: String) -> void:
+    if equipped_implants.get(name, false):
+        active_combat_implant = name
 
 func set_cyber_implant(name: String, enabled: bool) -> void:
     equipped_implants[name] = enabled
+    if not enabled and active_combat_implant == name:
+        active_combat_implant = "Gorilla Arms" if equipped_implants.get("Gorilla Arms", false) else "Mantis Blades"
 
 func _try_hit_target() -> void:
     var origin := camera.global_position
-    var default_range := 2.8 if equipped_implants.get("Mantis Blades", false) else 2.0
-    var attack_range := float(get_meta("next_melee_range", default_range))
+    var attack_range := 2.2
+    var damage := 14.0
+    match active_combat_implant:
+        "Mantis Blades":
+            attack_range = 3.0
+            damage = 26.0
+        "Gorilla Arms":
+            attack_range = 2.5
+            damage = 38.0
+        "Monowire":
+            attack_range = 4.8
+            damage = 22.0
+    attack_range = float(get_meta("next_melee_range", attack_range))
+    damage *= float(get_meta("next_melee_bonus", 1.0))
     var finish := origin + (-camera.global_transform.basis.z * attack_range)
     var query := PhysicsRayQueryParameters3D.create(origin, finish)
     query.exclude = [get_rid()]
+    query.collision_mask = 3
     var result := get_world_3d().direct_space_state.intersect_ray(query)
-    var bonus := float(get_meta("next_melee_bonus", 1.0))
     if not result.is_empty():
         var target = result.get("collider")
-        if target and target.is_in_group("enemies") and target.has_method("take_damage"):
-            var damage := 10.0 * bonus
-            if equipped_implants.get("Gorilla Arms", false):
-                damage *= 1.5
+        if target != null and target.is_in_group("enemies") and target.has_method("take_damage"):
             target.take_damage(damage)
+            _camera_impact(0.16 if active_combat_implant == "Gorilla Arms" else 0.08, 0.07)
+            _spawn_hit_spark(result.position, active_combat_implant == "Mantis Blades")
     set_meta("next_melee_bonus", 1.0)
-    set_meta("next_melee_range", default_range)
+    set_meta("next_melee_range", attack_range if active_combat_implant == "Monowire" else (3.0 if active_combat_implant == "Mantis Blades" else 2.5))
+
+func _spawn_hit_spark(at: Vector3, blade: bool) -> void:
+    var root := get_tree().current_scene
+    var fx := Node3D.new()
+    root.add_child(fx)
+    fx.global_position = at
+    var orb := MeshInstance3D.new()
+    var sphere := SphereMesh.new()
+    sphere.radius = 0.13
+    sphere.height = 0.26
+    orb.mesh = sphere
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = Color(0.05, 0.88, 1.0) if blade else Color(1.0, 0.42, 0.08)
+    mat.emission_enabled = true
+    mat.emission = mat.albedo_color
+    mat.emission_energy_multiplier = 3.0
+    orb.material_override = mat
+    fx.add_child(orb)
+    var tw := fx.create_tween()
+    tw.tween_property(orb, "scale", Vector3.ONE * 2.8, 0.12)
+    tw.tween_callback(fx.queue_free)
+
+func _create_rainbow_trails() -> void:
+    trail_material = StandardMaterial3D.new()
+    trail_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    trail_material.vertex_color_use_as_albedo = true
+    trail_material.emission_enabled = true
+    trail_material.emission = Color.WHITE
+    trail_material.emission_energy_multiplier = 2.2
+    trail_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    var root := get_tree().current_scene
+    trail_mesh_left = MeshInstance3D.new()
+    trail_mesh_right = MeshInstance3D.new()
+    trail_mesh_left.name = "SandevistanRainbowTrail_L"
+    trail_mesh_right.name = "SandevistanRainbowTrail_R"
+    root.add_child(trail_mesh_left)
+    root.add_child(trail_mesh_right)
+    trail_mesh_left.mesh = ImmediateMesh.new()
+    trail_mesh_right.mesh = ImmediateMesh.new()
+    trail_mesh_left.material_override = trail_material
+    trail_mesh_right.material_override = trail_material
+
+func _update_rainbow_trails(_delta: float) -> void:
+    if not is_instance_valid(trail_mesh_left) or not is_instance_valid(trail_mesh_right):
+        return
+    var active := bool(get_meta("sandevistan_active", false)) or (active_combat_implant == "Monowire" and punch_cooldown > 0.0)
+    var left_tip := left_arm_pivot.global_position + (-left_arm_pivot.global_transform.basis.z * 0.78)
+    var right_tip := right_arm_pivot.global_position + (-right_arm_pivot.global_transform.basis.z * 0.78)
+    trail_points_left = _update_single_trail(trail_mesh_left, trail_points_left, left_tip, active, 0.0)
+    trail_points_right = _update_single_trail(trail_mesh_right, trail_points_right, right_tip, active, 0.48)
+
+func _update_single_trail(mesh_node: MeshInstance3D, history: Array[Vector3], tip: Vector3, active: bool, hue_offset: float) -> Array[Vector3]:
+    if active:
+        history.append(tip)
+        while history.size() > 20:
+            history.pop_front()
+    elif not history.is_empty():
+        history.pop_front()
+    var immediate := mesh_node.mesh as ImmediateMesh
+    immediate.clear_surfaces()
+    if history.size() >= 2:
+        immediate.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, trail_material)
+        for i in range(history.size()):
+            var hue := fposmod(float(Time.get_ticks_msec()) * 0.00045 + float(i) * 0.075 + hue_offset, 1.0)
+            var alpha := float(i + 1) / float(history.size())
+            immediate.surface_set_color(Color.from_hsv(hue, 0.96, 1.0, alpha))
+            immediate.surface_add_vertex(mesh_node.to_local(history[i]))
+        immediate.surface_end()
+    return history

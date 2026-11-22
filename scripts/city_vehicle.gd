@@ -12,12 +12,20 @@ func _ready() -> void:
     rotation.y = -PI * 0.5 if direction > 0.0 else PI * 0.5
     _build_vehicle()
 
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
     var scene := get_tree().current_scene
     var time_factor := 1.0
     if scene != null:
         time_factor = float(scene.get_meta("world_time_scale", 1.0))
-    position.x += speed * direction * delta * time_factor
+    var move_amount := speed * direction * delta * time_factor
+    # Keep traffic on the road and stop before any newly-added building collider.
+    var origin := global_position + Vector3(0, 0.62, 0)
+    var ahead := origin + Vector3(signf(move_amount) * 4.4, 0, 0)
+    var query := PhysicsRayQueryParameters3D.create(origin, ahead)
+    query.collision_mask = 1
+    var obstacle := get_world_3d().direct_space_state.intersect_ray(query)
+    if obstacle.is_empty():
+        position.x += move_amount
     if direction > 0.0 and position.x > max_x:
         position.x = min_x
     elif direction < 0.0 and position.x < min_x:
