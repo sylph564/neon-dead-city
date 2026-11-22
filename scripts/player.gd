@@ -41,6 +41,7 @@ var left_arm_pivot: Node3D
 var status_label: Label
 var health_value := 100.0
 var stamina_value := 100.0
+var equipped_implants := {"Mantis Blades": true, "Gorilla Arms": true}
 
 func _ready() -> void:
     if not OS.has_feature("mobile"):
@@ -314,13 +315,21 @@ func _start_punch() -> void:
     punch_cooldown = 0.42
     _try_hit_target()
 
+func set_cyber_implant(name: String, enabled: bool) -> void:
+    equipped_implants[name] = enabled
+
 func _try_hit_target() -> void:
     var origin := camera.global_position
-    var finish := origin + (-camera.global_transform.basis.z * 2.0)
+    var attack_range := 2.8 if equipped_implants.get("Mantis Blades", false) else 2.0
+    var finish := origin + (-camera.global_transform.basis.z * attack_range)
     var query := PhysicsRayQueryParameters3D.create(origin, finish)
     query.exclude = [get_rid()]
     var result := get_world_3d().direct_space_state.intersect_ray(query)
     if not result.is_empty():
         var target = result.get("collider")
         if target and target.is_in_group("enemies") and target.has_method("take_damage"):
-            target.take_damage(10)
+            var damage := 10.0 * float(get_meta("next_melee_bonus", 1.0))
+            if equipped_implants.get("Gorilla Arms", false):
+                damage *= 1.5
+            set_meta("next_melee_bonus", 1.0)
+            target.take_damage(damage)
