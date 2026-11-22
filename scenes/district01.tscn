@@ -1,7 +1,8 @@
-[gd_scene load_steps=46 format=3]
+[gd_scene load_steps=47 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Shader" path="res://materials/city_surface.gdshader" id="2_surface"]
+[ext_resource type="Script" path="res://scripts/district_runtime.gd" id="3_runtime"]
 
 [sub_resource type="PlaneMesh" id="FloorMesh"]
 size = Vector2(180, 180)
@@ -195,11 +196,14 @@ metallic = 0.72
 roughness = 0.32
 
 [node name="Main" type="Node3D"]
+script = ExtResource("3_runtime")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-48, -25, 0)
-light_energy = 1.0
-shadow_enabled = false
+light_energy = 0.9
+shadow_enabled = true
+shadow_bias = 0.06
+shadow_normal_bias = 1.2
 
 [node name="Ground" type="MeshInstance3D" parent="."]
 position = Vector3(0, -0.12, 0)

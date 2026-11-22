@@ -43,7 +43,7 @@ var left_arm_pivot: Node3D
 var status_label: Label
 var health_value := 100.0
 var stamina_value := 100.0
-var equipped_implants := {"Mantis Blades": true, "Gorilla Arms": true}
+var equipped_implants := {"Mantis Blades": true, "Gorilla Arms": true, "Monowire": true, "Projectile Launch System": true}
 
 func _ready() -> void:
     if not OS.has_feature("mobile"):
@@ -265,6 +265,8 @@ func _physics_process(delta: float) -> void:
     var sprint_requested := sprint_touch or Input.is_key_pressed(KEY_SHIFT)
     var running := sprint_requested and stamina_value > 0.0
     var speed := sprint_speed if running else walk_speed
+    if bool(get_meta("sandevistan_active", false)):
+        speed *= 1.35
     velocity.x = direction.x * speed
     velocity.z = direction.z * speed
 
@@ -298,8 +300,15 @@ func _physics_process(delta: float) -> void:
         var windup := 1.0 - smoothstep(0.0, 0.22, t)
         var thrust := smoothstep(0.12, 0.42, t) * (1.0 - smoothstep(0.52, 1.0, t))
         var base_x := -0.43 if active_attack_arm == left_arm_pivot else 0.43
-        active_attack_arm.rotation = Vector3(-0.22 + windup * 0.35 - thrust * 1.05, -0.08 if base_x < 0.0 else 0.08, 0.04)
-        active_attack_arm.position = Vector3(base_x, -0.39 - windup * 0.07, -0.82 - thrust * 0.58)
+        if equipped_implants.get("Monowire", false):
+            active_attack_arm.rotation = Vector3(-0.35 - thrust * 0.9, (0.42 if base_x < 0.0 else -0.42) * thrust, 0.12 * thrust)
+            active_attack_arm.position = Vector3(base_x * (1.0 + thrust * 0.22), -0.39 - windup * 0.08, -0.82 - thrust * 0.78)
+        elif equipped_implants.get("Mantis Blades", false):
+            active_attack_arm.rotation = Vector3(-0.5 - thrust * 0.65, (0.5 if base_x < 0.0 else -0.5) * thrust, 0.18 * thrust)
+            active_attack_arm.position = Vector3(base_x * (1.0 + thrust * 0.12), -0.39 - windup * 0.07, -0.82 - thrust * 0.62)
+        else:
+            active_attack_arm.rotation = Vector3(-0.22 + windup * 0.35 - thrust * 1.05, -0.08 if base_x < 0.0 else 0.08, 0.04)
+            active_attack_arm.position = Vector3(base_x, -0.39 - windup * 0.07, -0.82 - thrust * 0.58)
     else:
         right_arm_pivot.rotation = right_arm_pivot.rotation.lerp(Vector3.ZERO, delta * 16.0)
         right_arm_pivot.position = right_arm_pivot.position.lerp(Vector3(0.43, -0.39, -0.82), delta * 16.0)
@@ -328,16 +337,19 @@ func set_cyber_implant(name: String, enabled: bool) -> void:
 
 func _try_hit_target() -> void:
     var origin := camera.global_position
-    var attack_range := 2.8 if equipped_implants.get("Mantis Blades", false) else 2.0
+    var default_range := 2.8 if equipped_implants.get("Mantis Blades", false) else 2.0
+    var attack_range := float(get_meta("next_melee_range", default_range))
     var finish := origin + (-camera.global_transform.basis.z * attack_range)
     var query := PhysicsRayQueryParameters3D.create(origin, finish)
     query.exclude = [get_rid()]
     var result := get_world_3d().direct_space_state.intersect_ray(query)
+    var bonus := float(get_meta("next_melee_bonus", 1.0))
     if not result.is_empty():
         var target = result.get("collider")
         if target and target.is_in_group("enemies") and target.has_method("take_damage"):
-            var damage := 10.0 * float(get_meta("next_melee_bonus", 1.0))
+            var damage := 10.0 * bonus
             if equipped_implants.get("Gorilla Arms", false):
                 damage *= 1.5
-            set_meta("next_melee_bonus", 1.0)
             target.take_damage(damage)
+    set_meta("next_melee_bonus", 1.0)
+    set_meta("next_melee_range", default_range)
