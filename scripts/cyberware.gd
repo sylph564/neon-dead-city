@@ -62,6 +62,7 @@ func _create_interface():
     capacity_label = Label.new()
     capacity_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.24))
     list.add_child(capacity_label)
+    _create_character_preview(list)
 
     var descriptions = {
         "Sandevistan": "OS  •  slows the world for 5 seconds",
@@ -116,6 +117,77 @@ func _create_interface():
         b.pressed.connect(_activate.bind(spec[0]))
         layer.add_child(b)
         skill_buttons[spec[0]] = b
+
+
+func _create_character_preview(parent):
+    var holder = HBoxContainer.new()
+    holder.custom_minimum_size = Vector2(0, 135)
+    parent.add_child(holder)
+    var preview = SubViewportContainer.new()
+    preview.custom_minimum_size = Vector2(132, 132)
+    preview.stretch = true
+    holder.add_child(preview)
+    var viewport = SubViewport.new()
+    viewport.size = Vector2i(220, 220)
+    viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+    preview.add_child(viewport)
+    var world = Node3D.new()
+    viewport.add_child(world)
+    var camera = Camera3D.new()
+    camera.position = Vector3(0, 1.25, 3.8)
+    camera.look_at(Vector3(0, 1.0, 0))
+    viewport.add_child(camera)
+    var key = DirectionalLight3D.new()
+    key.rotation_degrees = Vector3(-28, -25, 0)
+    key.light_energy = 1.3
+    world.add_child(key)
+    var body_mat = StandardMaterial3D.new()
+    body_mat.albedo_color = Color(0.035, 0.055, 0.075)
+    body_mat.metallic = 0.45
+    var accent = StandardMaterial3D.new()
+    accent.albedo_color = Color(0.05, 0.72, 0.88)
+    accent.emission_enabled = true
+    accent.emission = Color(0.02, 0.45, 0.7)
+    var torso = MeshInstance3D.new()
+    var torso_mesh = CapsuleMesh.new()
+    torso_mesh.radius = 0.28
+    torso_mesh.height = 0.9
+    torso.mesh = torso_mesh
+    torso.position.y = 1.15
+    torso.material_override = body_mat
+    world.add_child(torso)
+    var head = MeshInstance3D.new()
+    var head_mesh = SphereMesh.new()
+    head_mesh.radius = 0.19
+    head_mesh.height = 0.38
+    head.mesh = head_mesh
+    head.position.y = 1.82
+    head.material_override = body_mat
+    world.add_child(head)
+    for side in [-1.0, 1.0]:
+        var arm = MeshInstance3D.new()
+        var arm_mesh = CapsuleMesh.new()
+        arm_mesh.radius = 0.09
+        arm_mesh.height = 0.72
+        arm.mesh = arm_mesh
+        arm.position = Vector3(side * 0.39, 1.15, 0)
+        arm.rotation.z = side * -0.18
+        arm.material_override = accent
+        world.add_child(arm)
+        var leg = MeshInstance3D.new()
+        var leg_mesh = CapsuleMesh.new()
+        leg_mesh.radius = 0.12
+        leg_mesh.height = 0.85
+        leg.mesh = leg_mesh
+        leg.position = Vector3(side * 0.16, 0.43, 0)
+        leg.material_override = body_mat
+        world.add_child(leg)
+    var caption = Label.new()
+    caption.text = "OPERATOR  //  ACTIVE LOADOUT\\nNEURAL PROFILE: SYL-01"
+    caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    caption.add_theme_font_size_override("font_size", 12)
+    caption.add_theme_color_override("font_color", Color(0.55,0.82,0.9))
+    holder.add_child(caption)
 
 func _toggle_panel():
     panel.visible = not panel.visible
@@ -174,7 +246,7 @@ func _create_dummy():
     var dummy = StaticBody3D.new()
     dummy.name = "CombatTrainingDummy"
     dummy.set_script(preload("res://scripts/damage_dummy.gd"))
-    dummy.position = Vector3(0, 0, -5)
+    dummy.position = player.global_position - player.global_transform.basis.z * 1.8
     dummy.add_to_group("enemies")
     var shape = CollisionShape3D.new()
     var capsule = CapsuleShape3D.new()
