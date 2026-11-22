@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=41 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Shader" path="res://materials/city_surface.gdshader" id="2_surface"]
@@ -30,7 +30,7 @@ shader_parameter/grid_strength = 0.0
 
 [sub_resource type="ShaderMaterial" id="BuildingTexture"]
 shader = ExtResource("2_surface")
-shader_parameter/base_color = Color(0.025, 0.04, 0.068, 1)
+shader_parameter/base_color = Color(0.045, 0.028, 0.052, 1)
 shader_parameter/tile_scale = 12.0
 shader_parameter/roughness_value = 0.72
 shader_parameter/metallic_value = 0.28
@@ -51,7 +51,7 @@ roughness = 0.9
 size = Vector3(2.2, 0.16, 150)
 
 [sub_resource type="StandardMaterial3D" id="SidewalkMat"]
-albedo_color = Color(0.07, 0.08, 0.105, 1)
+albedo_color = Color(0.12, 0.105, 0.095, 1)
 roughness = 0.88
 
 [sub_resource type="BoxMesh" id="BuildingMesh"]
@@ -66,10 +66,10 @@ roughness = 0.76
 size = Vector3(1.55, 1.05, 0.07)
 
 [sub_resource type="StandardMaterial3D" id="WindowMat"]
-albedo_color = Color(0.015, 0.28, 0.42, 1)
+albedo_color = Color(0.92, 0.54, 0.19, 1)
 emission_enabled = true
-emission = Color(0.015, 0.28, 0.42, 1)
-emission_energy_multiplier = 0.75
+emission = Color(0.92, 0.42, 0.12, 1)
+emission_energy_multiplier = 0.65
 roughness = 0.35
 
 [sub_resource type="BoxMesh" id="NeonMesh"]
@@ -112,6 +112,66 @@ albedo_color = Color(0.02, 0.35, 0.7, 1)
 emission_enabled = true
 emission = Color(0.02, 0.35, 0.7, 1)
 emission_energy_multiplier = 2.0
+
+
+[sub_resource type="BoxMesh" id="HouseMesh"]
+size = Vector3(8.5, 5.2, 7.5)
+
+[sub_resource type="BoxMesh" id="HouseRoofMesh"]
+size = Vector3(9.1, 0.42, 8.1)
+
+[sub_resource type="StandardMaterial3D" id="HouseTerracotta"]
+albedo_color = Color(0.34, 0.16, 0.12, 1)
+roughness = 0.88
+
+[sub_resource type="StandardMaterial3D" id="HouseOlive"]
+albedo_color = Color(0.22, 0.25, 0.16, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="HouseRoofMat"]
+albedo_color = Color(0.12, 0.075, 0.09, 1)
+roughness = 0.82
+
+[sub_resource type="BoxMesh" id="StreetMarkMesh"]
+size = Vector3(0.18, 0.035, 2.4)
+
+[sub_resource type="StandardMaterial3D" id="StreetMarkMat"]
+albedo_color = Color(0.82, 0.72, 0.48, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="WheelMesh"]
+top_radius = 0.34
+bottom_radius = 0.34
+height = 0.22
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="TireMat"]
+albedo_color = Color(0.012, 0.014, 0.018, 1)
+roughness = 0.96
+
+[sub_resource type="BoxMesh" id="LightMesh"]
+size = Vector3(0.38, 0.16, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="HeadlightMat"]
+albedo_color = Color(1, 0.78, 0.38, 1)
+emission_enabled = true
+emission = Color(1, 0.62, 0.2, 1)
+emission_energy_multiplier = 1.3
+
+[sub_resource type="BoxMesh" id="ShopSignMesh"]
+size = Vector3(3.2, 0.72, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="ShopSignOrange"]
+albedo_color = Color(0.95, 0.25, 0.08, 1)
+emission_enabled = true
+emission = Color(1, 0.16, 0.035, 1)
+emission_energy_multiplier = 1.8
+
+[sub_resource type="StandardMaterial3D" id="ShopSignPink"]
+albedo_color = Color(0.85, 0.08, 0.34, 1)
+emission_enabled = true
+emission = Color(0.95, 0.04, 0.28, 1)
+emission_energy_multiplier = 1.7
 
 [node name="Main" type="Node3D"]
 
@@ -802,3 +862,93 @@ surface_material_override/0 = SubResource("NeonMat")
 position = Vector3(-12, 11.2, -19.85)
 mesh = SubResource("SignMesh")
 surface_material_override/0 = SubResource("SignMat")
+
+
+[node name="RoadDash01" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.035, -12)
+mesh = SubResource("StreetMarkMesh")
+surface_material_override/0 = SubResource("StreetMarkMat")
+
+[node name="RoadDash02" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.035, -6)
+mesh = SubResource("StreetMarkMesh")
+surface_material_override/0 = SubResource("StreetMarkMat")
+
+[node name="RoadDash03" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.035, 0)
+mesh = SubResource("StreetMarkMesh")
+surface_material_override/0 = SubResource("StreetMarkMat")
+
+[node name="RoadDash04" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.035, 6)
+mesh = SubResource("StreetMarkMesh")
+surface_material_override/0 = SubResource("StreetMarkMat")
+
+[node name="RoadDash05" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.035, 12)
+mesh = SubResource("StreetMarkMesh")
+surface_material_override/0 = SubResource("StreetMarkMat")
+
+[node name="HomeA" type="MeshInstance3D" parent="."]
+position = Vector3(-34, 2.65, -10)
+mesh = SubResource("HouseMesh")
+surface_material_override/0 = SubResource("HouseTerracotta")
+
+[node name="HomeARoof" type="MeshInstance3D" parent="."]
+position = Vector3(-34, 5.35, -10)
+mesh = SubResource("HouseRoofMesh")
+surface_material_override/0 = SubResource("HouseRoofMat")
+
+[node name="HomeB" type="MeshInstance3D" parent="."]
+position = Vector3(34, 2.65, 10)
+mesh = SubResource("HouseMesh")
+surface_material_override/0 = SubResource("HouseOlive")
+
+[node name="HomeBRoof" type="MeshInstance3D" parent="."]
+position = Vector3(34, 5.35, 10)
+mesh = SubResource("HouseRoofMesh")
+surface_material_override/0 = SubResource("HouseRoofMat")
+
+[node name="CornerShopOrange" type="MeshInstance3D" parent="."]
+position = Vector3(-34, 4.1, -5.95)
+mesh = SubResource("ShopSignMesh")
+surface_material_override/0 = SubResource("ShopSignOrange")
+
+[node name="CornerShopPink" type="MeshInstance3D" parent="."]
+position = Vector3(34, 4.1, 14.05)
+mesh = SubResource("ShopSignMesh")
+surface_material_override/0 = SubResource("ShopSignPink")
+
+[node name="CarWheelFL" type="MeshInstance3D" parent="."]
+position = Vector3(1.02, 0.35, 1.55)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+surface_material_override/0 = SubResource("TireMat")
+
+[node name="CarWheelFR" type="MeshInstance3D" parent="."]
+position = Vector3(-1.02, 0.35, 1.55)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+surface_material_override/0 = SubResource("TireMat")
+
+[node name="CarWheelRL" type="MeshInstance3D" parent="."]
+position = Vector3(1.02, 0.35, 4.45)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+surface_material_override/0 = SubResource("TireMat")
+
+[node name="CarWheelRR" type="MeshInstance3D" parent="."]
+position = Vector3(-1.02, 0.35, 4.45)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+surface_material_override/0 = SubResource("TireMat")
+
+[node name="CarHeadlightLeft" type="MeshInstance3D" parent="."]
+position = Vector3(-0.72, 0.7, 0.88)
+mesh = SubResource("LightMesh")
+surface_material_override/0 = SubResource("HeadlightMat")
+
+[node name="CarHeadlightRight" type="MeshInstance3D" parent="."]
+position = Vector3(0.72, 0.7, 0.88)
+mesh = SubResource("LightMesh")
+surface_material_override/0 = SubResource("HeadlightMat")
