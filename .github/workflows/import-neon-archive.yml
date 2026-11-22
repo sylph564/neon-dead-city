@@ -5,7 +5,7 @@ on:
     branches:
       - neon-update-0.2.0
     paths:
-      - NEON_DEAD_CITY_0.2.0.zip
+      - NEON_DEAD_CITY_0.3.0.zip
 
 permissions:
   contents: write
@@ -22,12 +22,12 @@ jobs:
 
       - name: Extract project files
         run: |
-          test -f NEON_DEAD_CITY_0.2.0.zip
+          test -f NEON_DEAD_CITY_0.3.0.zip
           mkdir -p /tmp/neon-import
-          unzip -q NEON_DEAD_CITY_0.2.0.zip -d /tmp/neon-import
+          unzip -q NEON_DEAD_CITY_0.3.0.zip -d /tmp/neon-import
           test -d /tmp/neon-import/neon-dead-city-main
           cp -a /tmp/neon-import/neon-dead-city-main/. .
-          rm NEON_DEAD_CITY_0.2.0.zip
+          rm NEON_DEAD_CITY_0.3.0.zip
 
       - name: Commit imported project
         run: |
@@ -37,6 +37,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No project changes to commit."
           else
-            git commit -m "Import NEON project update 0.2.0"
+            git commit -m "Import NEON project overhaul 0.3.0"
             git push origin HEAD:neon-update-0.2.0
           fi
