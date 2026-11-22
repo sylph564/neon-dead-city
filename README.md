@@ -1,24 +1,27 @@
 # NEON: DEAD CITY
 
-A first-person 3D cyberpunk city prototype built with Godot 4.
+A first-person 3D cyberpunk district prototype built with Godot 4.3 and the GL Compatibility renderer.
 
 ## Current prototype
-- First-person movement, mouse look, mobile joystick and touch camera controls.
-- District 01 with neon architecture, lit shopfronts, road markings, fog, glow and directional shadows.
-- Ambient pedestrian patrols and lightweight moving traffic.
-- Cyberware menu with install/remove controls and seven active skills: Sandevistan, Mantis Blades, Gorilla Arms, Pulse Core, Reflex Booster, Monowire and Projectile Launch System.
-- Training dummy with damage and DPS readout.
-- Android arm64 debug export preset; GL Compatibility renderer for mobile devices.
 
-Sandevistan slows ambient pedestrians and traffic while boosting player movement, with a timed screen effect. The city NPCs and vehicles use lightweight procedural meshes to keep the scene suitable for mobile hardware.
+- First-person movement with mobile joystick, touch camera, sprint, and jump.
+- District 01 with neon architecture, road markings, shopfronts, fog, glow, and directional shadows.
+- Procedural skyline, street props, holographic panels, puddles, kiosk, and curb lighting.
+- Fixed-lane traffic using physics collision and obstacle response.
+- Collidable pedestrian characters with simple patrol movement, visual outfit variants, and dialogue interaction.
+- Mobile TALK control and keyboard E interaction.
+- Sandevistan movement boost with a rainbow movement ribbon and world time dilation.
+- Existing cyberware terminal and training area from the earlier prototype.
+- Android arm64 debug export preset.
 
 ## Build an Android APK
-The **Build Android APK** workflow runs on pushes to `main` and can also be started manually from the Actions tab. When it succeeds, open the run and download the `NEON-DEAD-CITY-Android` artifact.
 
-This remains an evolving prototype: quests, save data, advanced AI, detailed interiors and a larger streaming open world are not yet implemented.
+The **Build Android APK** workflow runs on pushes to `main` and `neon-update-0.2.0`, and can also be started manually from GitHub Actions. When it succeeds, open the workflow run and download the `NEON-DEAD-CITY-Android` artifact.
 
-## 0.3.0 combat and city pass
+## Performance target
 
-This update adds a redesigned ripperdoc-style cyberware terminal, separate first-person melee animation profiles for Mantis Blades, Gorilla Arms and Monowire, hit sparks and camera impact feedback, and animated rainbow weapon trails during Sandevistan. Street pedestrians now have CharacterBody3D hitboxes, health and hit reactions. Large district structures receive static collision, traffic checks for obstacles, and additional neon signage/atmospheric lighting.
+The project retains Godot's GL Compatibility renderer to maximize device compatibility. The scene uses procedural primitive meshes and limited dynamic lights. A larger city with imported high-quality models, rigged character animations, detailed interiors, audio, and mission content is still future work.
 
-The Android build still targets the Godot Compatibility renderer for mobile hardware. This source update has not yet been runtime-tested in the Godot editor; use the GitHub Actions build and device test before treating it as stable.
+## 0.4.0 City & World Pass
+
+See `CHANGELOG_0.4.0.md` for the changes and verification limits. The archive has not yet been runtime-tested in Godot or on an Android device.

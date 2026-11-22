@@ -19,6 +19,7 @@ shader_parameter/roughness_value = 0.94
 shader_parameter/metallic_value = 0.02
 shader_parameter/detail_strength = 0.8
 shader_parameter/grid_strength = 0.18
+shader_parameter/wetness_strength = 0.28
 
 [sub_resource type="ShaderMaterial" id="RoadTexture"]
 shader = ExtResource("2_surface")
@@ -28,6 +29,7 @@ shader_parameter/roughness_value = 0.88
 shader_parameter/metallic_value = 0.08
 shader_parameter/detail_strength = 0.72
 shader_parameter/grid_strength = 0.0
+shader_parameter/wetness_strength = 0.72
 
 [sub_resource type="ShaderMaterial" id="BuildingTexture"]
 shader = ExtResource("2_surface")
@@ -37,6 +39,7 @@ shader_parameter/roughness_value = 0.72
 shader_parameter/metallic_value = 0.28
 shader_parameter/detail_strength = 0.9
 shader_parameter/grid_strength = 0.8
+shader_parameter/wetness_strength = 0.04
 
 [sub_resource type="BoxShape3D" id="FloorShape"]
 size = Vector3(180, 0.2, 180)

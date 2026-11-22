@@ -48,6 +48,11 @@ var trail_material: StandardMaterial3D
 var right_arm_pivot: Node3D
 var left_arm_pivot: Node3D
 var status_label: Label
+var dialogue_label: Label
+var dialogue_panel: PanelContainer
+var motion_echo_mesh: MeshInstance3D
+var motion_echo_material: StandardMaterial3D
+var motion_echo_history: Array[Vector3] = []
 var health_value := 100.0
 var stamina_value := 100.0
 var equipped_implants := {"Mantis Blades": true, "Gorilla Arms": true, "Monowire": true, "Projectile Launch System": true}
@@ -62,6 +67,7 @@ func _ready() -> void:
     camera_base_rotation = camera.rotation
     _create_view_arms()
     _create_rainbow_trails()
+    _create_motion_echo()
     _create_mobile_controls()
     _create_hud()
 
@@ -168,6 +174,29 @@ func _create_hud() -> void:
     hint.add_theme_color_override("font_color", Color(0.22, 0.65, 0.78, 0.85))
     layer.add_child(hint)
 
+    dialogue_panel = PanelContainer.new()
+    dialogue_panel.name = "DialoguePanel"
+    dialogue_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+    dialogue_panel.position = Vector2(-260, -142)
+    dialogue_panel.custom_minimum_size = Vector2(520, 78)
+    dialogue_panel.visible = false
+    var dialogue_style := StyleBoxFlat.new()
+    dialogue_style.bg_color = Color(0.035, 0.012, 0.035, 0.94)
+    dialogue_style.border_color = Color(0.9, 0.18, 0.38, 0.95)
+    dialogue_style.set_border_width_all(2)
+    dialogue_style.set_corner_radius_all(7)
+    dialogue_style.content_margin_left = 16
+    dialogue_style.content_margin_right = 16
+    dialogue_style.content_margin_top = 9
+    dialogue_style.content_margin_bottom = 9
+    dialogue_panel.add_theme_stylebox_override("panel", dialogue_style)
+    layer.add_child(dialogue_panel)
+    dialogue_label = Label.new()
+    dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    dialogue_label.add_theme_font_size_override("font_size", 15)
+    dialogue_label.add_theme_color_override("font_color", Color(1.0, 0.83, 0.78))
+    dialogue_panel.add_child(dialogue_label)
+
 func _create_mobile_controls() -> void:
     var layer := CanvasLayer.new()
     layer.name = "MobileControls"
@@ -180,7 +209,7 @@ func _create_mobile_controls() -> void:
 
     _add_action_button(layer, "JUMP", Vector2(-118, -112), Vector2(96, 64), _request_jump, Color(0.04, 0.32, 0.48, 0.9))
     _add_action_button(layer, "RUN", Vector2(-118, -190), Vector2(96, 62), _toggle_sprint, Color(0.04, 0.22, 0.34, 0.9))
-    _add_action_button(layer, "HIT", Vector2(-226, -112), Vector2(92, 64), _request_attack, Color(0.25, 0.08, 0.16, 0.94))
+    _add_action_button(layer, "TALK", Vector2(-226, -112), Vector2(92, 64), _request_interact, Color(0.22, 0.045, 0.11, 0.94))
 
 func _add_action_button(layer: CanvasLayer, caption: String, offset: Vector2, button_size: Vector2, action: Callable, color: Color) -> void:
     var button := Button.new()
@@ -215,14 +244,44 @@ func _request_jump() -> void:
 func _request_attack() -> void:
     attack_requested = true
 
+func _request_interact() -> void:
+    if not is_instance_valid(camera):
+        return
+    var origin := camera.global_position
+    var finish := origin + (-camera.global_transform.basis.z * 3.6)
+    var query := PhysicsRayQueryParameters3D.create(origin, finish)
+    query.exclude = [get_rid()]
+    query.collision_mask = 2
+    var result := get_world_3d().direct_space_state.intersect_ray(query)
+    if result.is_empty():
+        _show_dialogue("Никого рядом. Подойди ближе к прохожему.")
+        return
+    var target: Object = result.get("collider")
+    if target != null and target.has_method("interact"):
+        _show_dialogue(str(target.call("interact")))
+    else:
+        _show_dialogue("Этот объект не отвечает.")
+
+func _show_dialogue(message: String) -> void:
+    if not is_instance_valid(dialogue_panel) or not is_instance_valid(dialogue_label):
+        return
+    dialogue_label.text = message
+    dialogue_panel.visible = true
+    var tween := create_tween()
+    tween.tween_interval(3.2)
+    tween.tween_callback(func():
+        if is_instance_valid(dialogue_panel):
+            dialogue_panel.visible = false
+    )
+
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         _rotate_view(event.relative, mouse_sensitivity)
     elif event is InputEventKey and event.pressed:
         if event.keycode == KEY_ESCAPE:
             Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-        elif event.keycode == KEY_F and not event.echo:
-            _request_attack()
+        elif event.keycode == KEY_E and not event.echo:
+            _request_interact()
     elif event is InputEventScreenTouch:
         var screen_size := get_viewport().get_visible_rect().size
         if event.pressed:
@@ -305,6 +364,7 @@ func _physics_process(delta: float) -> void:
         _start_punch()
     attack_requested = false
     _update_rainbow_trails(delta)
+    _update_motion_echo(delta)
 
     if running and horizontal_speed > 0.25:
         stamina_value = maxf(0.0, stamina_value - delta * 22.0)
@@ -426,6 +486,57 @@ func _spawn_hit_spark(at: Vector3, blade: bool) -> void:
     var tw := fx.create_tween()
     tw.tween_property(orb, "scale", Vector3.ONE * 2.8, 0.12)
     tw.tween_callback(fx.queue_free)
+
+func _create_motion_echo() -> void:
+    motion_echo_material = StandardMaterial3D.new()
+    motion_echo_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    motion_echo_material.vertex_color_use_as_albedo = true
+    motion_echo_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    motion_echo_material.emission_enabled = true
+    motion_echo_material.emission = Color.WHITE
+    motion_echo_material.emission_energy_multiplier = 2.8
+    motion_echo_mesh = MeshInstance3D.new()
+    motion_echo_mesh.name = "SandevistanMovementRibbon"
+    motion_echo_mesh.mesh = ImmediateMesh.new()
+    motion_echo_mesh.material_override = motion_echo_material
+    motion_echo_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    get_tree().current_scene.add_child(motion_echo_mesh)
+
+func _update_motion_echo(_delta: float) -> void:
+    if not is_instance_valid(motion_echo_mesh):
+        return
+    var active := bool(get_meta("sandevistan_active", false))
+    var horizontal := Vector2(velocity.x, velocity.z).length()
+    if active and horizontal > 0.8:
+        motion_echo_history.append(global_position + Vector3(0.0, 0.9, 0.0))
+        while motion_echo_history.size() > 14:
+            motion_echo_history.pop_front()
+    elif not motion_echo_history.is_empty():
+        motion_echo_history.pop_front()
+
+    var immediate := motion_echo_mesh.mesh as ImmediateMesh
+    immediate.clear_surfaces()
+    if motion_echo_history.size() < 2:
+        return
+    motion_echo_mesh.global_transform = Transform3D.IDENTITY
+    immediate.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP, motion_echo_material)
+    for i in range(motion_echo_history.size()):
+        var point: Vector3 = motion_echo_history[i]
+        var previous: Vector3 = motion_echo_history[maxi(0, i - 1)]
+        var next: Vector3 = motion_echo_history[mini(motion_echo_history.size() - 1, i + 1)]
+        var tangent := next - previous
+        tangent.y = 0.0
+        if tangent.length_squared() < 0.0001:
+            tangent = Vector3.FORWARD
+        var side := tangent.normalized().cross(Vector3.UP).normalized() * 0.18
+        var hue := fposmod(float(Time.get_ticks_msec()) * 0.0005 + float(i) * 0.085, 1.0)
+        var alpha := float(i + 1) / 14.0 * 0.72
+        var tint := Color.from_hsv(hue, 0.95, 1.0, alpha)
+        immediate.surface_set_color(tint)
+        immediate.surface_add_vertex(point - side)
+        immediate.surface_set_color(tint)
+        immediate.surface_add_vertex(point + side)
+    immediate.surface_end()
 
 func _create_rainbow_trails() -> void:
     trail_material = StandardMaterial3D.new()
