@@ -261,7 +261,8 @@ func _physics_process(delta: float) -> void:
     input_vector = input_vector.limit_length(1.0)
 
     var direction := (transform.basis * Vector3(input_vector.x, 0, input_vector.y)).normalized()
-    var running := sprint_touch or Input.is_key_pressed(KEY_SHIFT)
+    var sprint_requested := sprint_touch or Input.is_key_pressed(KEY_SHIFT)
+    var running := sprint_requested and stamina_value > 0.0
     var speed := sprint_speed if running else walk_speed
     velocity.x = direction.x * speed
     velocity.z = direction.z * speed
@@ -301,7 +302,12 @@ func _physics_process(delta: float) -> void:
         right_arm_pivot.position = right_arm_pivot.position.lerp(Vector3(0.34, -0.31, -0.62), delta * 18.0)
     left_arm_pivot.position.y = -0.31 + sin(bob_time) * 0.012
 
-    stamina_value = maxf(0.0, stamina_value - delta * 13.0) if running and horizontal_speed > 0.25 else minf(100.0, stamina_value + delta * 8.0)
+    if running and horizontal_speed > 0.25:
+        stamina_value = maxf(0.0, stamina_value - delta * 22.0)
+    else:
+        stamina_value = minf(100.0, stamina_value + delta * 16.0)
+    if stamina_value <= 0.0:
+        sprint_touch = false
     if status_label:
         status_label.text = "HP  %03d    STAMINA  %03d" % [int(health_value), int(stamina_value)]
 
