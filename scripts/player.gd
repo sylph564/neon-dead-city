@@ -76,8 +76,8 @@ func _create_view_arms() -> void:
     var glove_mat := _make_material(Color(0.012, 0.018, 0.028), 0.25, 0.3)
     var trim_mat := _make_material(Color(0.02, 0.65, 0.95), 0.25, 0.3, true)
 
-    left_arm_pivot = _build_arm(arms_root, "LeftArm", Vector3(-0.34, -0.31, -0.62), sleeve_mat, glove_mat, trim_mat)
-    right_arm_pivot = _build_arm(arms_root, "RightArm", Vector3(0.34, -0.31, -0.62), sleeve_mat, glove_mat, trim_mat)
+    left_arm_pivot = _build_arm(arms_root, "LeftArm", Vector3(-0.43, -0.39, -0.82), sleeve_mat, glove_mat, trim_mat)
+    right_arm_pivot = _build_arm(arms_root, "RightArm", Vector3(0.43, -0.39, -0.82), sleeve_mat, glove_mat, trim_mat)
 
 func _build_arm(parent: Node3D, arm_name: String, arm_position: Vector3, sleeve_mat: Material, glove_mat: Material, trim_mat: Material) -> Node3D:
     var pivot := Node3D.new()
@@ -87,28 +87,28 @@ func _build_arm(parent: Node3D, arm_name: String, arm_position: Vector3, sleeve_
 
     var sleeve := MeshInstance3D.new()
     var sleeve_mesh := BoxMesh.new()
-    sleeve_mesh.size = Vector3(0.19, 0.22, 0.48)
+    sleeve_mesh.size = Vector3(0.16, 0.17, 0.38)
     sleeve.mesh = sleeve_mesh
     sleeve.material_override = sleeve_mat
-    sleeve.position = Vector3(0.0, -0.025, 0.12)
+    sleeve.position = Vector3(0.0, -0.015, 0.10)
     pivot.add_child(sleeve)
 
     var cuff := MeshInstance3D.new()
     var cuff_mesh := BoxMesh.new()
-    cuff_mesh.size = Vector3(0.205, 0.07, 0.09)
+    cuff_mesh.size = Vector3(0.17, 0.055, 0.07)
     cuff.mesh = cuff_mesh
     cuff.material_override = trim_mat
-    cuff.position = Vector3(0.0, -0.025, -0.105)
+    cuff.position = Vector3(0.0, -0.015, -0.075)
     pivot.add_child(cuff)
 
     var fist := MeshInstance3D.new()
     var fist_mesh := SphereMesh.new()
-    fist_mesh.radius = 0.105
-    fist_mesh.height = 0.19
+    fist_mesh.radius = 0.085
+    fist_mesh.height = 0.16
     fist.mesh = fist_mesh
     fist.material_override = glove_mat
-    fist.position = Vector3(0.0, -0.015, -0.19)
-    fist.scale = Vector3(1.0, 0.82, 1.25)
+    fist.position = Vector3(0.0, -0.005, -0.16)
+    fist.scale = Vector3(1.0, 0.82, 1.15)
     pivot.add_child(fist)
     return pivot
 
@@ -297,14 +297,14 @@ func _physics_process(delta: float) -> void:
         var t := 1.0 - punch_time / 0.34
         var windup := 1.0 - smoothstep(0.0, 0.22, t)
         var thrust := smoothstep(0.12, 0.42, t) * (1.0 - smoothstep(0.52, 1.0, t))
-        var base_x := -0.34 if active_attack_arm == left_arm_pivot else 0.34
+        var base_x := -0.43 if active_attack_arm == left_arm_pivot else 0.43
         active_attack_arm.rotation = Vector3(-0.22 + windup * 0.35 - thrust * 1.05, -0.08 if base_x < 0.0 else 0.08, 0.04)
-        active_attack_arm.position = Vector3(base_x, -0.31 - windup * 0.07, -0.62 - thrust * 0.58)
+        active_attack_arm.position = Vector3(base_x, -0.39 - windup * 0.07, -0.82 - thrust * 0.58)
     else:
         right_arm_pivot.rotation = right_arm_pivot.rotation.lerp(Vector3.ZERO, delta * 16.0)
-        right_arm_pivot.position = right_arm_pivot.position.lerp(Vector3(0.34, -0.31, -0.62), delta * 16.0)
+        right_arm_pivot.position = right_arm_pivot.position.lerp(Vector3(0.43, -0.39, -0.82), delta * 16.0)
         left_arm_pivot.rotation = left_arm_pivot.rotation.lerp(Vector3.ZERO, delta * 16.0)
-        left_arm_pivot.position = left_arm_pivot.position.lerp(Vector3(-0.34, -0.31 + sin(bob_time) * 0.012, -0.62), delta * 16.0)
+        left_arm_pivot.position = left_arm_pivot.position.lerp(Vector3(-0.43, -0.39 + sin(bob_time) * 0.012, -0.82), delta * 16.0)
         active_attack_arm = null
 
     if running and horizontal_speed > 0.25:
