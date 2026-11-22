@@ -8,9 +8,16 @@ var panel: PanelContainer
 var capacity_label: Label
 
 func _ready():
-    _create_dummy()
+    # Wait until the Player has completed its own _ready() and created its camera/arms.
+    call_deferred("_initialize_cyberware")
+
+func _initialize_cyberware():
+    if not is_instance_valid(player):
+        push_error("Cyberware: Player reference is missing")
+        return
     _create_interface()
-    call_deferred("_create_arm_implants")
+    _create_dummy()
+    _create_arm_implants()
 
 func _process(_delta):
     var now = Time.get_ticks_msec()
@@ -51,9 +58,9 @@ func _create_arm_implants():
         mantis_visuals.append(blade)
         var gauntlet = MeshInstance3D.new()
         var gauntlet_mesh = BoxMesh.new()
-        gauntlet_mesh.size = Vector3(0.24, 0.25, 0.42)
+        gauntlet_mesh.size = Vector3(0.18, 0.17, 0.25)
         gauntlet.mesh = gauntlet_mesh
-        gauntlet.position = Vector3(0.0, -0.015, 0.02)
+        gauntlet.position = Vector3(0.0, -0.015, -0.12)
         gauntlet.material_override = armor_mat
         pivot.add_child(gauntlet)
         gorilla_visuals.append(gauntlet)
@@ -68,7 +75,12 @@ func _update_arm_implants():
 func _create_interface():
     var layer = CanvasLayer.new()
     layer.name = "CyberwareLayer"
-    player.add_child(layer)
+    layer.layer = 50
+    layer.follow_viewport_enabled = false
+    var scene_root = get_tree().current_scene
+    if scene_root == null:
+        scene_root = get_tree().root
+    scene_root.add_child(layer)
     var open = Button.new()
     open.text = "CYBERWARE"
     open.position = Vector2(-178, 18)
@@ -81,8 +93,9 @@ func _create_interface():
 
     panel = PanelContainer.new()
     panel.set_anchors_preset(Control.PRESET_CENTER)
-    panel.position = Vector2(-185, -165)
-    panel.custom_minimum_size = Vector2(370, 330)
+    panel.position = Vector2(-190, -170)
+    panel.size = Vector2(380, 340)
+    panel.custom_minimum_size = Vector2(380, 340)
     panel.visible = false
     var style = StyleBoxFlat.new()
     style.bg_color = Color(0.012, 0.018, 0.03, 0.98)
@@ -293,7 +306,7 @@ func _create_dummy():
     var dummy = StaticBody3D.new()
     dummy.name = "CombatTrainingDummy"
     dummy.set_script(preload("res://scripts/damage_dummy.gd"))
-    dummy.position = player.global_position - player.global_transform.basis.z * 3.2
+    dummy.position = Vector3.ZERO
     dummy.add_to_group("enemies")
     var shape = CollisionShape3D.new()
     var capsule = CapsuleShape3D.new()
@@ -321,4 +334,8 @@ func _create_dummy():
     readout.modulate = Color(0.35,0.95,1.0)
     readout.billboard = BaseMaterial3D.BILLBOARD_ENABLED
     dummy.add_child(readout)
-    get_tree().current_scene.add_child(dummy)
+    var scene_root = get_tree().current_scene
+    if scene_root == null:
+        scene_root = get_tree().root
+    scene_root.add_child(dummy)
+    dummy.global_position = player.global_position - player.global_transform.basis.z * 2.35
