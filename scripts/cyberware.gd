@@ -10,7 +10,7 @@ var capacity_label: Label
 func _ready():
     _create_dummy()
     _create_interface()
-    _create_arm_implants()
+    call_deferred("_create_arm_implants")
 
 func _process(_delta):
     var now = Time.get_ticks_msec()
