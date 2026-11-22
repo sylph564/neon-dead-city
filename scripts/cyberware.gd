@@ -10,6 +10,7 @@ var capacity_label: Label
 func _ready():
     _create_dummy()
     _create_interface()
+    _create_arm_implants()
 
 func _process(_delta):
     var now = Time.get_ticks_msec()
@@ -23,6 +24,46 @@ func _process(_delta):
             button.text = "%.1f" % left
         else:
             button.text = name.to_upper()
+
+
+var mantis_visuals = []
+var gorilla_visuals = []
+
+func _create_arm_implants():
+    var blade_mat = StandardMaterial3D.new()
+    blade_mat.albedo_color = Color(0.8, 0.12, 0.28)
+    blade_mat.metallic = 0.85
+    blade_mat.emission_enabled = true
+    blade_mat.emission = Color(0.55, 0.025, 0.12)
+    var armor_mat = StandardMaterial3D.new()
+    armor_mat.albedo_color = Color(0.34, 0.22, 0.12)
+    armor_mat.metallic = 0.9
+    for pivot in [player.left_arm_pivot, player.right_arm_pivot]:
+        if pivot == null:
+            continue
+        var blade = MeshInstance3D.new()
+        var blade_mesh = BoxMesh.new()
+        blade_mesh.size = Vector3(0.055, 0.055, 0.72)
+        blade.mesh = blade_mesh
+        blade.position = Vector3(0.0, 0.02, -0.47)
+        blade.material_override = blade_mat
+        pivot.add_child(blade)
+        mantis_visuals.append(blade)
+        var gauntlet = MeshInstance3D.new()
+        var gauntlet_mesh = BoxMesh.new()
+        gauntlet_mesh.size = Vector3(0.24, 0.25, 0.42)
+        gauntlet.mesh = gauntlet_mesh
+        gauntlet.position = Vector3(0.0, -0.015, 0.02)
+        gauntlet.material_override = armor_mat
+        pivot.add_child(gauntlet)
+        gorilla_visuals.append(gauntlet)
+    _update_arm_implants()
+
+func _update_arm_implants():
+    for visual in mantis_visuals:
+        visual.visible = installed.get("Mantis Blades", false)
+    for visual in gorilla_visuals:
+        visual.visible = installed.get("Gorilla Arms", false)
 
 func _create_interface():
     var layer = CanvasLayer.new()
@@ -40,8 +81,8 @@ func _create_interface():
 
     panel = PanelContainer.new()
     panel.set_anchors_preset(Control.PRESET_CENTER)
-    panel.position = Vector2(-235, -220)
-    panel.custom_minimum_size = Vector2(470, 440)
+    panel.position = Vector2(-235, -255)
+    panel.custom_minimum_size = Vector2(470, 510)
     panel.visible = false
     var style = StyleBoxFlat.new()
     style.bg_color = Color(0.012, 0.018, 0.03, 0.98)
@@ -197,6 +238,7 @@ func _toggle_implant(name):
     installed[name] = not installed[name]
     if player.has_method("set_cyber_implant"):
         player.set_cyber_implant(name, installed[name])
+    _update_arm_implants()
     _refresh_panel()
 
 func _refresh_panel():
