@@ -1,6 +1,7 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="Shader" path="res://materials/city_surface.gdshader" id="2_surface"]
 
 [sub_resource type="PlaneMesh" id="FloorMesh"]
 size = Vector2(180, 180)
@@ -8,6 +9,33 @@ size = Vector2(180, 180)
 [sub_resource type="StandardMaterial3D" id="FloorMat"]
 albedo_color = Color(0.012, 0.018, 0.03, 1)
 roughness = 0.96
+
+[sub_resource type="ShaderMaterial" id="FloorTexture"]
+shader = ExtResource("2_surface")
+shader_parameter/base_color = Color(0.012, 0.018, 0.03, 1)
+shader_parameter/tile_scale = 32.0
+shader_parameter/roughness_value = 0.94
+shader_parameter/metallic_value = 0.02
+shader_parameter/detail_strength = 0.8
+shader_parameter/grid_strength = 0.18
+
+[sub_resource type="ShaderMaterial" id="RoadTexture"]
+shader = ExtResource("2_surface")
+shader_parameter/base_color = Color(0.035, 0.043, 0.06, 1)
+shader_parameter/tile_scale = 44.0
+shader_parameter/roughness_value = 0.88
+shader_parameter/metallic_value = 0.08
+shader_parameter/detail_strength = 0.72
+shader_parameter/grid_strength = 0.0
+
+[sub_resource type="ShaderMaterial" id="BuildingTexture"]
+shader = ExtResource("2_surface")
+shader_parameter/base_color = Color(0.025, 0.04, 0.068, 1)
+shader_parameter/tile_scale = 12.0
+shader_parameter/roughness_value = 0.72
+shader_parameter/metallic_value = 0.28
+shader_parameter/detail_strength = 0.9
+shader_parameter/grid_strength = 0.8
 
 [sub_resource type="BoxShape3D" id="FloorShape"]
 size = Vector3(180, 0.2, 180)
@@ -95,7 +123,7 @@ shadow_enabled = false
 [node name="Ground" type="MeshInstance3D" parent="."]
 position = Vector3(0, -0.12, 0)
 mesh = SubResource("FloorMesh")
-surface_material_override/0 = SubResource("FloorMat")
+surface_material_override/0 = SubResource("FloorTexture")
 
 [node name="GroundBody" type="StaticBody3D" parent="."]
 position = Vector3(0, -0.12, 0)
@@ -105,7 +133,7 @@ shape = SubResource("FloorShape")
 
 [node name="RoadNorthSouth" type="MeshInstance3D" parent="."]
 mesh = SubResource("RoadMesh")
-surface_material_override/0 = SubResource("RoadMat")
+surface_material_override/0 = SubResource("RoadTexture")
 
 [node name="RoadEastWest" type="MeshInstance3D" parent="."]
 rotation_degrees = Vector3(0, 90, 0)
@@ -128,7 +156,7 @@ surface_material_override/0 = SubResource("SidewalkMat")
 [node name="Tower1" type="MeshInstance3D" parent="."]
 position = Vector3(-12, 7, -24)
 mesh = SubResource("BuildingMesh")
-surface_material_override/0 = SubResource("BuildingMat")
+surface_material_override/0 = SubResource("BuildingTexture")
 scale = Vector3(1, 0.875, 1)
 
 
