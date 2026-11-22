@@ -36,6 +36,8 @@ var bob_time := 0.0
 var jump_bob := 0.0
 var punch_time := 0.0
 var punch_cooldown := 0.0
+var attack_alternate := false
+var active_attack_arm: Node3D
 var right_arm_pivot: Node3D
 var left_arm_pivot: Node3D
 var status_label: Label
@@ -290,16 +292,20 @@ func _physics_process(delta: float) -> void:
     if attack_requested and punch_cooldown <= 0.0:
         _start_punch()
     attack_requested = false
-    if punch_time > 0.0:
+    if punch_time > 0.0 and active_attack_arm != null:
         punch_time = maxf(0.0, punch_time - delta)
-        var t := 1.0 - punch_time / 0.24
-        var swing := sin(t * PI)
-        right_arm_pivot.rotation = Vector3(-swing * 1.15, swing * 0.12, -swing * 0.08)
-        right_arm_pivot.position = Vector3(0.34, -0.31, -0.62 - swing * 0.36)
+        var t := 1.0 - punch_time / 0.34
+        var windup := 1.0 - smoothstep(0.0, 0.22, t)
+        var thrust := smoothstep(0.12, 0.42, t) * (1.0 - smoothstep(0.52, 1.0, t))
+        var base_x := -0.34 if active_attack_arm == left_arm_pivot else 0.34
+        active_attack_arm.rotation = Vector3(-0.22 + windup * 0.35 - thrust * 1.05, -0.08 if base_x < 0.0 else 0.08, 0.04)
+        active_attack_arm.position = Vector3(base_x, -0.31 - windup * 0.07, -0.62 - thrust * 0.58)
     else:
-        right_arm_pivot.rotation = right_arm_pivot.rotation.lerp(Vector3.ZERO, delta * 18.0)
-        right_arm_pivot.position = right_arm_pivot.position.lerp(Vector3(0.34, -0.31, -0.62), delta * 18.0)
-    left_arm_pivot.position.y = -0.31 + sin(bob_time) * 0.012
+        right_arm_pivot.rotation = right_arm_pivot.rotation.lerp(Vector3.ZERO, delta * 16.0)
+        right_arm_pivot.position = right_arm_pivot.position.lerp(Vector3(0.34, -0.31, -0.62), delta * 16.0)
+        left_arm_pivot.rotation = left_arm_pivot.rotation.lerp(Vector3.ZERO, delta * 16.0)
+        left_arm_pivot.position = left_arm_pivot.position.lerp(Vector3(-0.34, -0.31 + sin(bob_time) * 0.012, -0.62), delta * 16.0)
+        active_attack_arm = null
 
     if running and horizontal_speed > 0.25:
         stamina_value = maxf(0.0, stamina_value - delta * 22.0)
@@ -311,8 +317,10 @@ func _physics_process(delta: float) -> void:
         status_label.text = "HP  %03d    STAMINA  %03d" % [int(health_value), int(stamina_value)]
 
 func _start_punch() -> void:
-    punch_time = 0.24
-    punch_cooldown = 0.42
+    attack_alternate = not attack_alternate
+    active_attack_arm = left_arm_pivot if attack_alternate else right_arm_pivot
+    punch_time = 0.34
+    punch_cooldown = 0.48
     _try_hit_target()
 
 func set_cyber_implant(name: String, enabled: bool) -> void:
