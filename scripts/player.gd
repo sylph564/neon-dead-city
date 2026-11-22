@@ -205,12 +205,10 @@ func _request_attack() -> void:
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         _rotate_view(event.relative, mouse_sensitivity)
-    elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-        _request_attack()
     elif event is InputEventKey and event.pressed:
         if event.keycode == KEY_ESCAPE:
             Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-        elif event.keycode == KEY_F or event.keycode == KEY_E:
+        elif event.keycode == KEY_F and not event.echo:
             _request_attack()
     elif event is InputEventScreenTouch:
         var screen_size := get_viewport().get_visible_rect().size
